@@ -1,0 +1,8 @@
+{
+    "id": "bf2042-portal-snippet-plugin",
+    "name": "Snippets",
+    "version": "0.0.1",
+    "description": "Insert snippets of blocks to your portal workspace",
+    "author": "TheOzzy",
+    "main": "index.js"
+}
