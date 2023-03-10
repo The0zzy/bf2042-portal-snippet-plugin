@@ -1,178 +1,199 @@
 (function () {
-    const plugin = BF2042Portal.Plugins.getPlugin("test");
+  const plugin = BF2042Portal.Plugins.getPlugin("bf2042-portal-snippet-plugin");
 
-    plugin.initializeWorkspace = function () {
-        console.log("initializing snippets plugin...");
-    };
+  const displayMessageXML =
+    '<block  type="DisplayCustomNotificationMessage" x="122" y="1266"><value name="VALUE-0"><block type="Message"><value name="VALUE-0"><block type="Text"><field name="TEXT">MESSAGE</field></block></value></block></value><value name="VALUE-1"><block type="CustomMessagesItem"><field name="VALUE-0">CustomMessages</field><field name="VALUE-1">HeaderText</field></block></value><value name="VALUE-2"><block type="Number"><field name="NUM">-1</field></block></value></block>';
 
-    const testExtensionVersion = {
-        id: "testExtensionVersion",
-        displayText: "Extension Version",
-        scopeType: _Blockly.ContextMenuRegistry.ScopeType.WORKSPACE,
-        weight: 100,
-        preconditionFn: () => "enabled",
-        callback: function () {
-            console.log(plugin.getExtensionVersion());
-        }
-    };
+  plugin.initializeWorkspace = function () {
+    console.log("initializing snippets plugin...");
+  };
 
-    const testUrl = {
-        id: "testUrl",
-        displayText: "URL",
-        scopeType: _Blockly.ContextMenuRegistry.ScopeType.WORKSPACE,
-        weight: 100,
-        preconditionFn: () => "enabled",
-        callback: function () {
-            console.log(plugin.getUrl("manifest.json"));
-        }
-    };
+  function loadXml(xmlText) {
+    if (!xmlText) {
+      throw new Error("Encountered null value for Snippet!");
+    }
 
-    const testErrorLog = {
-        id: "testErrorLog",
-        displayText: "Error Log",
-        scopeType: _Blockly.ContextMenuRegistry.ScopeType.WORKSPACE,
-        weight: 100,
-        preconditionFn: () => "enabled",
-        callback: function () {
-            BF2042Portal.Shared.logError("Error Test", "Error Test");
-        }
-    };
+    xmlText = xmlText.trim();
 
-    const testClipboard = {
-        id: "testClipboard",
-        displayText: "Clipboard",
-        scopeType: _Blockly.ContextMenuRegistry.ScopeType.WORKSPACE,
-        weight: 100,
-        preconditionFn: () => "enabled",
-        callback: async function () {
-            await BF2042Portal.Shared.copyTextToClipboard("This text has been copied to and pasted from the clipboard!");
-            const pasteResult = await BF2042Portal.Shared.pasteTextFromClipboard();
+    if (!xmlText.startsWith("<block")) {
+      throw new Error("Snippet doesn't start with a block element!");
+    }
 
-            console.log(pasteResult);
-        }
-    };
+    const domText = `<xml xmlns="https://developers.google.com/blockly/xml">${xmlText.trim()}</xml>`;
 
-    const testSelectedBlocks = function (id, scope) {
-        function precondition() {
-            return "enabled";
-        }
+    const xmlDom = _Blockly.Xml.textToDom(domText);
 
-        async function callback(scope) {
-            const blocks = plugin.getSelectedBlocks(scope) || [];
+    //NOTE: Extract variables
+    const variableBlocks = xmlDom.querySelectorAll(
+      "block[type='variableReferenceBlock']"
+    );
+    const variables = [];
 
-            console.log(blocks);
-        }
+    variableBlocks.forEach((e) => {
+      const objectType = e.querySelector("field[name='OBJECTTYPE']")
+        .textContent;
+      const variableName = e.querySelector("field[name='VAR']").textContent;
 
-        return {
-            id: id,
-            displayText: "Selected Blocks",
-            scopeType: scope,
-            weight: 100,
-            preconditionFn: precondition,
-            callback: callback
-        };
-    };
+      if (
+        objectType &&
+        variableName &&
+        !variables.find(
+          (v) => v.objectType === objectType && v.variableName === variableName
+        )
+      ) {
+        variables.push({
+          objectType,
+          variableName,
+        });
+      }
+    });
 
-    const testMouseCoords = function (id, scope) {
-        function precondition() {
-            return "enabled";
-        }
+    const variablesXml = document.createElement("variables");
 
-        async function callback() {
-            console.log(plugin.getMouseCoords());
-        }
+    variables.forEach((e) => {
+      const variable = document.createElement("variable");
+      variable.setAttribute("type", e.objectType);
+      variable.innerText = e.variableName;
 
-        return {
-            id: id,
-            displayText: "Mouse Coords",
-            scopeType: scope,
-            weight: 100,
-            preconditionFn: precondition,
-            callback: callback
-        };
-    };
+      variablesXml.appendChild(variable);
+    });
 
-    const testCustomContextMenu = function (id, scope) {
-        function precondition() {
-            return "enabled";
-        }
+    _Blockly.Xml.domToVariables(variablesXml, _Blockly.getMainWorkspace());
 
-        function callback(scope) {
-            const menuItems = [{
-                text: "Option 1",
-                enabled: true,
-                callback: () => console.log("Option 1 has been chosen!", scope)
-            },
-            {
-                text: "Option 2",
-                enabled: true,
-                callback: () => console.log("Option 2 has been chosen!", scope)
-            }]
+    //NOTE: Determine a bounding box
+    let minX;
+    let minY;
 
-            plugin.showContextMenuWithBack(menuItems);
-        }
+    for (let i = 0; i < xmlDom.childNodes.length; i++) {
+      const block = xmlDom.childNodes[i];
 
-        return {
-            id: id,
-            displayText: "Custom Context Menu >",
-            scopeType: scope,
-            weight: 100,
-            preconditionFn: precondition,
-            callback: callback
-        };
-    };
+      const x = block.getAttribute("x");
+      const y = block.getAttribute("y");
 
-    const testSelectedBlocksWorkspace = testSelectedBlocks("testSelectedBlocksWorkspace", _Blockly.ContextMenuRegistry.ScopeType.WORKSPACE);
-    const testSelectedBlocksBlock = testSelectedBlocks("testSelectedBlocksBlock", _Blockly.ContextMenuRegistry.ScopeType.BLOCK);
-    const testMouseCoordsWorkspace = testMouseCoords("testMouseCoordsWorkspace", _Blockly.ContextMenuRegistry.ScopeType.WORKSPACE);
-    const testMouseCoordsBlock = testMouseCoords("testMouseCoordsBlock", _Blockly.ContextMenuRegistry.ScopeType.BLOCK);
-    const testCustomContextMenuWorkspace = testCustomContextMenu("testCustomContextMenuWorkspace", _Blockly.ContextMenuRegistry.ScopeType.WORKSPACE);
-    const testCustomContextMenuBlock = testCustomContextMenu("testCustomContextMenuBlock", _Blockly.ContextMenuRegistry.ScopeType.BLOCK);
+      if (!minX || x < minX) {
+        minX = x;
+      }
 
-    const testWorkspaceMenu = plugin.createMenu("testWorkspace", "Test", _Blockly.ContextMenuRegistry.ScopeType.WORKSPACE);
-    testWorkspaceMenu.options = [
-        "items.testExtensionVersion",
-        "items.testUrl",
-        "items.testErrorLog",
-        "items.testClipboard",
-        "items.testSelectedBlocksWorkspace",
-        "items.testMouseCoordsWorkspace",
-        "items.separatorWorkspace",
-        "menus.testSubMenuWorkspace",
-        "items.testCustomContextMenuWorkspace"
-    ];
+      if (!minY || y < minY) {
+        minY = y;
+      }
+    }
 
-    const testSubMenuWorkspace = plugin.createMenu("testSubMenuWorkspace", "Sub Menu", _Blockly.ContextMenuRegistry.ScopeType.WORKSPACE);
-    testSubMenuWorkspace.options = [
-        "items.testExtensionVersion",
-        "items.separatorWorkspace",
-        "menus.testWorkspace",
-    ];
+    //NOTE: Transform blocks to the minimum coords, then move them to their target position.
+    for (let i = 0; i < xmlDom.childNodes.length; i++) {
+      const block = xmlDom.childNodes[i];
 
-    const testBlockMenu = plugin.createMenu("testBlock", "Test", _Blockly.ContextMenuRegistry.ScopeType.BLOCK);
-    testBlockMenu.options = [
-        "items.testSelectedBlocksBlock",
-        "items.testMouseCoordsBlock",
-        "items.separatorBlock",
-        "items.testCustomContextMenuBlock"
-    ];
+      const x = block.getAttribute("x");
+      const y = block.getAttribute("y");
 
-    plugin.registerMenu(testWorkspaceMenu);
-    plugin.registerMenu(testSubMenuWorkspace);
-    plugin.registerMenu(testBlockMenu);
+      if (x == minX) {
+        block.setAttribute("x", plugin.getMouseCoords().x);
+      } else {
+        block.setAttribute("x", x - minX + plugin.getMouseCoords().x);
+      }
 
-    plugin.registerItem(testExtensionVersion);
-    plugin.registerItem(testUrl);
-    plugin.registerItem(testErrorLog);
-    plugin.registerItem(testClipboard);
-    plugin.registerItem(testSelectedBlocksWorkspace);
-    plugin.registerItem(testSelectedBlocksBlock);
-    plugin.registerItem(testMouseCoordsWorkspace);
-    plugin.registerItem(testMouseCoordsBlock);
-    plugin.registerItem(testCustomContextMenuWorkspace);
-    plugin.registerItem(testCustomContextMenuBlock);
+      if (y == minY) {
+        block.setAttribute("y", plugin.getMouseCoords().y);
+      } else {
+        block.setAttribute("y", y - minY + plugin.getMouseCoords().y);
+      }
+    }
 
-/*
+    _Blockly.Xml.domToWorkspace(xmlDom, _Blockly.getMainWorkspace());
+  }
+
+  const customHeaderMessageItem = {
+    id: "customHeaderMessage",
+    displayText: "Custom Header Message",
+    scopeType: _Blockly.ContextMenuRegistry.ScopeType.WORKSPACE,
+    weight: 100,
+    preconditionFn: () => "enabled",
+    callback: async function () {
+      try {
+        loadXml(displayMessageXML);
+      } catch (e) {
+        BF2042Portal.Shared.logError("Failed to load workspace!", e);
+      }
+    },
+  };
+
+  const manageSnippetsItem = {
+    id: "manageSnippets",
+    displayText: "Manage Snippets",
+    scopeType: _Blockly.ContextMenuRegistry.ScopeType.WORKSPACE,
+    weight: 100,
+    preconditionFn: () => "enabled",
+    callback: () => {alert("Dialog to manage snippets!")}
+  };
+
+  const insertSnippetMessageMenu = plugin.createMenu(
+    "insertSnippetMessageMenu",
+    "Message",
+    _Blockly.ContextMenuRegistry.ScopeType.WORKSPACE
+  );
+  insertSnippetMessageMenu.options = [
+    "items.customHeaderMessage"
+  ];
+  const insertSnippetVectorMenu = plugin.createMenu(
+    "insertSnippetVectorMenu",
+    "Vector",
+    _Blockly.ContextMenuRegistry.ScopeType.WORKSPACE
+  );
+  insertSnippetVectorMenu.options = [
+    "items.customHeaderMessage"
+  ];
+  const insertSnippetFavouritesMenu = plugin.createMenu(
+    "insertSnippetFavouritesMenu",
+    "Favourites",
+    _Blockly.ContextMenuRegistry.ScopeType.WORKSPACE
+  );
+  insertSnippetFavouritesMenu.options = [
+    "items.customHeaderMessage"
+  ];
+  const insertSnippetTemporaryMenu = plugin.createMenu(
+    "insertSnippetTemporaryMenu",
+    "Temporary",
+    _Blockly.ContextMenuRegistry.ScopeType.WORKSPACE
+  );
+  insertSnippetTemporaryMenu.options = [
+    "items.customHeaderMessage"
+  ];
+
+
+  const insertSnippetMenu = plugin.createMenu(
+    "insertSnippetMenu",
+    "Insert Snippet",
+    _Blockly.ContextMenuRegistry.ScopeType.WORKSPACE
+  );
+  insertSnippetMenu.options = [
+    "menus.insertSnippetFavouritesMenu",
+    "menus.insertSnippetTemporaryMenu",
+    "items.separatorWorkspace",
+    "menus.insertSnippetMessageMenu",
+    "menus.insertSnippetVectorMenu"
+  ];
+
+  const snippetsMenu = plugin.createMenu(
+    "snippetsMenu",
+    "Snippets",
+    _Blockly.ContextMenuRegistry.ScopeType.WORKSPACE
+  );
+  snippetsMenu.options = [
+    "menus.insertSnippetMenu",
+    "items.manageSnippets"
+  ];
+
+  plugin.registerMenu(snippetsMenu);
+  plugin.registerMenu(insertSnippetMenu);
+  plugin.registerMenu(insertSnippetFavouritesMenu);
+  plugin.registerMenu(insertSnippetTemporaryMenu);
+  plugin.registerMenu(insertSnippetMessageMenu);
+  plugin.registerMenu(insertSnippetVectorMenu);
+  plugin.registerItem(customHeaderMessageItem);
+  plugin.registerItem(manageSnippetsItem);
+
+  _Blockly.ContextMenuRegistry.registry.register(snippetsMenu);
+  /*
 Block:
     As temporary Snippet
 
@@ -191,13 +212,11 @@ Workspace:
                 For
                 For (array)
                 While
+                Tickrate
             -----
             Temporary >
                 mySnippet1
                 mySnippet2
         Manage Snippets (opens dialog with overview and option to modify favourites list)
 */
-
-    _Blockly.ContextMenuRegistry.registry.register(testWorkspaceMenu);
-    _Blockly.ContextMenuRegistry.registry.register(testBlockMenu);
 })();
