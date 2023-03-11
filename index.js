@@ -195,28 +195,31 @@
   _Blockly.ContextMenuRegistry.registry.register(snippetsMenu);
   /*
 Block:
-    As temporary Snippet
+  Add as private Snippet
 
 Workspace:
-    Snippets >
-        Insert Snippet >
-            Favourites >
-                Fav1
-                Fav2
-            Vector >
-                SetYawToObject
-                Bounce Back Player
-            Message >
-                Custom Header Message
-            Loop >
-                For
-                For (array)
-                While
-                Tickrate
-            -----
-            Temporary >
-                mySnippet1
-                mySnippet2
-        Manage Snippets (opens dialog with overview and option to modify favourites list)
+  Manage Snippets
+  Insert Snippet >
+    Favourites >
+      Fav1
+      Fav2
+    Private >
+      mySnippet1
+      mySnippet2
+    -----
+    Vector >
+      SetYawToObject
+      Bounce Back Player
+    Message >
+      Custom Header Message
+    Time
+      Execute Every Second (Global)
+      Execute Every Second (Team)
+      Execute Every Second (Player)
+    Loop >
+      For
+      For (array)
+      While
+      Tickrate
 */
 })();
