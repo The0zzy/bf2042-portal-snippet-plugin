@@ -3,12 +3,7 @@
   const plugin = BF2042Portal.Plugins.getPlugin(pluginId);
   const workspaceScope = _Blockly.ContextMenuRegistry.ScopeType.WORKSPACE;
 
-  const displayMessageXML =
-    '<block  type="DisplayCustomNotificationMessage" x="122" y="1266"><value name="VALUE-0"><block type="Message"><value name="VALUE-0"><block type="Text"><field name="TEXT">MESSAGE</field></block></value></block></value><value name="VALUE-1"><block type="CustomMessagesItem"><field name="VALUE-0">CustomMessages</field><field name="VALUE-1">HeaderText</field></block></value><value name="VALUE-2"><block type="Number"><field name="NUM">-1</field></block></value></block>';
-
-  plugin.initializeWorkspace = function () {
-    //Do nothing
-  };
+  plugin.initializeWorkspace = function () {};
 
   function insertSnippetFromUrl(url) {
     try {
@@ -169,7 +164,16 @@
             data.items.forEach((item) => {
               let menuId = "insertMenu" + item.category;
               let menuName = item.category;
-              let insertSnippetItem = createSnippetMenuItem(item);
+              let insertSnippetItem = {
+                id: "insertItem" + crypto.randomUUID(),
+                displayText: item.name,
+                scopeType: workspaceScope,
+                weight: 100,
+                preconditionFn: () => "enabled",
+                callback: () => {
+                  insertSnippetFromUrl(plugin.getUrl(item.url));
+                },
+              };
               plugin.registerItem(insertSnippetItem);
               if (!categoryMenus.some((element) => menuId === element.id)) {
                 let menu = plugin.createMenu(menuId, menuName, workspaceScope);
@@ -203,19 +207,6 @@
     }
   }
 
-  function createSnippetMenuItem(snippetIndexItem) {
-    return {
-      id: "insertItem" + crypto.randomUUID(),
-      displayText: snippetIndexItem.name,
-      scopeType: workspaceScope,
-      weight: 100,
-      preconditionFn: () => "enabled",
-      callback: () => {
-        insertSnippetFromUrl(plugin.getUrl(snippetIndexItem.url));
-      },
-    };
-  }
-
   const manageSnippetsItem = {
     id: "manageSnippets",
     displayText: "Manage Snippets",
@@ -223,7 +214,7 @@
     weight: 100,
     preconditionFn: () => "enabled",
     callback: () => {
-      alert("Dialog to manage snippets!");
+      alert("Dialog to manage snippets coming soon!");
     },
   };
 
@@ -242,12 +233,13 @@
     workspaceScope
   );
   insertSnippetFavouritesMenu.options = ["items.emptySnippetItem"];
-  const insertSnippetTemporaryMenu = plugin.createMenu(
-    "insertSnippetTemporaryMenu",
+
+  const insertSnippetPrivateMenu = plugin.createMenu(
+    "insertSnippetPrivateMenu",
     "Private",
     workspaceScope
   );
-  insertSnippetTemporaryMenu.options = ["items.emptySnippetItem"];
+  insertSnippetPrivateMenu.options = ["items.emptySnippetItem"];
 
   const insertSnippetMenu = plugin.createMenu(
     "insertSnippetMenu",
@@ -256,7 +248,7 @@
   );
   insertSnippetMenu.options = [
     "menus.insertSnippetFavouritesMenu",
-    "menus.insertSnippetTemporaryMenu",
+    "menus.insertSnippetPrivateMenu",
     "items.separatorWorkspace",
   ];
 
@@ -272,7 +264,7 @@
   plugin.registerMenu(snippetsMenu);
   plugin.registerMenu(insertSnippetMenu);
   plugin.registerMenu(insertSnippetFavouritesMenu);
-  plugin.registerMenu(insertSnippetTemporaryMenu);
+  plugin.registerMenu(insertSnippetPrivateMenu);
   plugin.registerItem(emptySnippetItem);
   plugin.registerItem(manageSnippetsItem);
 
