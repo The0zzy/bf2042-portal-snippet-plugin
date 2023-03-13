@@ -277,33 +277,4 @@
   plugin.registerItem(manageSnippetsItem);
 
   _Blockly.ContextMenuRegistry.registry.register(snippetsMenu);
-  /*
-Block:
-  Add as private Snippet
-
-Workspace:
-  Manage Snippets
-  Insert Snippet >
-    Favourites >
-      Fav1
-      Fav2
-    Private >
-      mySnippet1
-      mySnippet2
-    -----
-    Vector >
-      SetYawToObject
-      Bounce Back Player
-    Message >
-      Custom Header Message
-    Time
-      Execute Every Second (Global)
-      Execute Every Second (Team)
-      Execute Every Second (Player)
-    Loop >
-      For
-      For (array)
-      While
-      Tickrate
-*/
 })();
