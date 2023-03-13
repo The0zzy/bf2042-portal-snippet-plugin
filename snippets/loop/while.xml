@@ -1,0 +1,1 @@
+<block  type="While" x="1549" y="616"><value name="VALUE-0"><block type="Boolean"><field name="BOOL">TRUE</field></block></value><statement name="DO"><block type="Wait"><value name="VALUE-0"><block type="Number"><field name="NUM">1</field></block></value></block></statement></block>

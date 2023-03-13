@@ -1,0 +1,1 @@
+<block  type="GetSoldierState" x="1315" y="713"><value name="VALUE-0"><block type="EventPlayer"></block></value><value name="VALUE-1"><block type="SoldierStateNumberItem"><field name="VALUE-0">SoldierStateNumber</field><field name="VALUE-1">CurrentHealth</field></block></value></block>
