@@ -1,5 +1,6 @@
 (function () {
   const plugin = BF2042Portal.Plugins.getPlugin("bf2042-portal-snippet-plugin");
+  const workspaceScope = _Blockly.ContextMenuRegistry.ScopeType.WORKSPACE;
 
   const displayMessageXML =
     '<block  type="DisplayCustomNotificationMessage" x="122" y="1266"><value name="VALUE-0"><block type="Message"><value name="VALUE-0"><block type="Text"><field name="TEXT">MESSAGE</field></block></value></block></value><value name="VALUE-1"><block type="CustomMessagesItem"><field name="VALUE-0">CustomMessages</field><field name="VALUE-1">HeaderText</field></block></value><value name="VALUE-2"><block type="Number"><field name="NUM">-1</field></block></value></block>';
@@ -7,6 +8,40 @@
   plugin.initializeWorkspace = function () {
     //Do nothing
   };
+
+  function insertSnippetFromUrl(url) {
+    try {
+      fetch(url)
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error(
+              "Did not receive proper response for snippet url '" + url + "'"
+            );
+          }
+          response
+            .text()
+            .then((data) => {
+              loadXml(data);
+            })
+            .catch((reason) => {
+              throw new Error(
+                "Couldn't parse response data for snippet url '" +
+                  url +
+                  "'\n" +
+                  reason
+              );
+            });
+        })
+        .catch((reason) => {
+          throw new Error(
+            "Couldn't fetch snippet url '" + url + "'\n" + reason
+          );
+        });
+    } catch (e) {
+      logError("Failed to load Snippet!", e);
+      alert("Failed to load snippet!\nCheck console for details.");
+    }
+  }
 
   function loadXml(xmlText) {
     if (!xmlText) {
@@ -118,115 +153,130 @@
     console.error(getLogPrefix("ERROR") + message, data);
   }
 
-  function buildInsertSnippetMenu(){
+  async function buildInsertSnippetMenu() {
     try {
-      let insertItemCounter = 0;
       let categoryMenus = [];
-      fetch(plugin.getUrl("snippets/index.json")).then((response) => {
-        logInfo("Retrieved snippets index:\n", response.json());
-        let snippetsIndex = response.json();
-        snippetsIndex.items.forEach((item) => {
-          let menuId = item.category+"InsertMenu";
-          let menuName = item.category;
-          if(!categoryMenus.some((element) => item.category+"InsertMenu" === element.id)){
-            let menu = plugin.createMenu(menuId, menuName, _Blockly.ContextMenuRegistry.ScopeType.WORKSPACE);
-            let insertSnippetItem = {
-              id: insertItem+"insertItemCounter",
-              weight: 100,
-              
-            }
-            menu.options = ["items.insertItem"+insertItemCounter]
-            categoryMenus.push(menu)
-          }
+      let insertSnippetMenu = plugin.createMenu(
+        "insertSnippetMenu",
+        "Insert Snippet",
+        workspaceScope
+      );
+      fetch(plugin.getUrl("snippets/index.json"))
+        .then((response) => {
+          response.json().then((data) => {
+            logInfo("Retrieved snippets index:\n", data);
+            data.items.forEach((item) => {
+              let menuId = "insertMenu" + item.category;
+              let menuName = item.category;
+              let insertSnippetItem = createSnippetMenuItem(item);
+              plugin.registerItem(insertSnippetItem);
+              if (!categoryMenus.some((element) => menuId === element.id)) {
+                let menu = plugin.createMenu(menuId, menuName, workspaceScope);
+                categoryMenus.push(menu);
+                plugin.registerMenu(menu);
+                insertSnippetMenu.options.push("menus." + menuId);
+              }
+              let menu = categoryMenus.find(
+                (element) => element.id === "insertMenu" + item.category
+              );
+              if (menu) {
+                menu.options.push("items." + insertSnippetItem.id);
+              } else {
+                logError(
+                  "Couldn't find menu '" + "insertMenu" + item.category + "'"
+                );
+              }
+            });
+          });
         })
-      }).catch((reason) => {
-        logError("Failed to retrieve snippets index:\n", reason);
-      })
+        .catch((reason) => {
+          logError("Failed to retrieve snippets index:\n", reason);
+        });
     } catch (error) {
       logError("Failed to build snippets menu:\n", error);
     }
   }
 
+  function createSnippetMenuItem(snippetIndexItem) {
+    return {
+      id: "insertItem" + crypto.randomUUID(),
+      displayText: snippetIndexItem.name,
+      scopeType: workspaceScope,
+      weight: 100,
+      preconditionFn: () => "enabled",
+      callback: () => {
+        insertSnippetFromUrl(plugin.getUrl(snippetIndexItem.url));
+      },
+    };
+  }
+
   const customHeaderMessageItem = {
     id: "customHeaderMessage",
     displayText: "Custom Header Message",
-    scopeType: _Blockly.ContextMenuRegistry.ScopeType.WORKSPACE,
+    scopeType: workspaceScope,
     weight: 100,
     preconditionFn: () => "enabled",
-    callback: async function () {
-      try {
-        loadXml(displayMessageXML);
-      } catch (e) {
-        BF2042Portal.Shared.logError("Failed to load workspace!", e);
-      }
-    },
+    callback: () =>
+      insertSnippetFromUrl(
+        plugin.getUrl("snippets/messages/customHeaderMessage.xml")
+      ),
   };
 
   const manageSnippetsItem = {
     id: "manageSnippets",
     displayText: "Manage Snippets",
-    scopeType: _Blockly.ContextMenuRegistry.ScopeType.WORKSPACE,
+    scopeType: workspaceScope,
     weight: 100,
     preconditionFn: () => "enabled",
-    callback: () => {alert("Dialog to manage snippets!")}
+    callback: () => {
+      alert("Dialog to manage snippets!");
+    },
   };
 
   const insertSnippetMessageMenu = plugin.createMenu(
     "insertSnippetMessageMenu",
     "Message",
-    _Blockly.ContextMenuRegistry.ScopeType.WORKSPACE
+    workspaceScope
   );
-  insertSnippetMessageMenu.options = [
-    "items.customHeaderMessage"
-  ];
+  insertSnippetMessageMenu.options = ["items.customHeaderMessage"];
   const insertSnippetVectorMenu = plugin.createMenu(
     "insertSnippetVectorMenu",
     "Vector",
-    _Blockly.ContextMenuRegistry.ScopeType.WORKSPACE
+    workspaceScope
   );
-  insertSnippetVectorMenu.options = [
-    "items.customHeaderMessage"
-  ];
+  insertSnippetVectorMenu.options = ["items.customHeaderMessage"];
   const insertSnippetFavouritesMenu = plugin.createMenu(
     "insertSnippetFavouritesMenu",
     "Favourites",
-    _Blockly.ContextMenuRegistry.ScopeType.WORKSPACE
+    workspaceScope
   );
-  insertSnippetFavouritesMenu.options = [
-    "items.customHeaderMessage"
-  ];
+  insertSnippetFavouritesMenu.options = ["items.customHeaderMessage"];
   const insertSnippetTemporaryMenu = plugin.createMenu(
     "insertSnippetTemporaryMenu",
     "Temporary",
-    _Blockly.ContextMenuRegistry.ScopeType.WORKSPACE
+    workspaceScope
   );
-  insertSnippetTemporaryMenu.options = [
-    "items.customHeaderMessage"
-  ];
-
+  insertSnippetTemporaryMenu.options = ["items.customHeaderMessage"];
 
   const insertSnippetMenu = plugin.createMenu(
     "insertSnippetMenu",
     "Insert Snippet",
-    _Blockly.ContextMenuRegistry.ScopeType.WORKSPACE
+    workspaceScope
   );
   insertSnippetMenu.options = [
     "menus.insertSnippetFavouritesMenu",
     "menus.insertSnippetTemporaryMenu",
     "items.separatorWorkspace",
     "menus.insertSnippetMessageMenu",
-    "menus.insertSnippetVectorMenu"
+    "menus.insertSnippetVectorMenu",
   ];
 
   const snippetsMenu = plugin.createMenu(
     "snippetsMenu",
     "Snippets",
-    _Blockly.ContextMenuRegistry.ScopeType.WORKSPACE
+    workspaceScope
   );
-  snippetsMenu.options = [
-    "menus.insertSnippetMenu",
-    "items.manageSnippets"
-  ];
+  snippetsMenu.options = ["menus.insertSnippetMenu", "items.manageSnippets"];
 
   plugin.registerMenu(snippetsMenu);
   plugin.registerMenu(insertSnippetMenu);
