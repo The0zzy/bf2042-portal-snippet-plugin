@@ -5,7 +5,7 @@
     '<block  type="DisplayCustomNotificationMessage" x="122" y="1266"><value name="VALUE-0"><block type="Message"><value name="VALUE-0"><block type="Text"><field name="TEXT">MESSAGE</field></block></value></block></value><value name="VALUE-1"><block type="CustomMessagesItem"><field name="VALUE-0">CustomMessages</field><field name="VALUE-1">HeaderText</field></block></value><value name="VALUE-2"><block type="Number"><field name="NUM">-1</field></block></value></block>';
 
   plugin.initializeWorkspace = function () {
-    console.log("initializing snippets plugin...");
+    //Do nothing
   };
 
   function loadXml(xmlText) {
@@ -100,6 +100,51 @@
     }
 
     _Blockly.Xml.domToWorkspace(xmlDom, _Blockly.getMainWorkspace());
+  }
+
+  function getLogPrefix(messageType) {
+    return "[" + pluginId + "] [" + messageType + "] - ";
+  }
+
+  function logInfo(message, data) {
+    console.info(getLogPrefix("INFO") + message, data);
+  }
+
+  function logWarning(message, data) {
+    console.warn(getLogPrefix("WARNING") + message, data);
+  }
+
+  function logError(message, data) {
+    console.error(getLogPrefix("ERROR") + message, data);
+  }
+
+  function buildInsertSnippetMenu(){
+    try {
+      let insertItemCounter = 0;
+      let categoryMenus = [];
+      fetch(plugin.getUrl("snippets/index.json")).then((response) => {
+        logInfo("Retrieved snippets index:\n", response.json());
+        let snippetsIndex = response.json();
+        snippetsIndex.items.forEach((item) => {
+          let menuId = item.category+"InsertMenu";
+          let menuName = item.category;
+          if(!categoryMenus.some((element) => item.category+"InsertMenu" === element.id)){
+            let menu = plugin.createMenu(menuId, menuName, _Blockly.ContextMenuRegistry.ScopeType.WORKSPACE);
+            let insertSnippetItem = {
+              id: insertItem+"insertItemCounter",
+              weight: 100,
+              
+            }
+            menu.options = ["items.insertItem"+insertItemCounter]
+            categoryMenus.push(menu)
+          }
+        })
+      }).catch((reason) => {
+        logError("Failed to retrieve snippets index:\n", reason);
+      })
+    } catch (error) {
+      logError("Failed to build snippets menu:\n", error);
+    }
   }
 
   const customHeaderMessageItem = {

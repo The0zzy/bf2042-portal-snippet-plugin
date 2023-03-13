@@ -2,19 +2,19 @@
     "items":
     [
         {
-            "tag": "vector",
+            "category": "vector",
             "url": "vector/setYawToObject.xml",
             "name": "SetYawToObject",
             "description": "A subroutine block that calculates the necessary yaw of player or vehicle for teleporting in order to face in the direction of the given object/position-vector"
         },
         {
-            "tag": "vector",
+            "category": "vector",
             "url": "vector/bounceBackPlayer.xml",
             "name": "Bounce Back Player",
             "description": "Adds two subroutines which enable bouncing back a player in the opposite direction of his current movement"
         },
         {
-            "tag": "message",
+            "category": "message",
             "url": "message/customHeaderMessage.xml",
             "name": "Custom Header Message",
             "description": "Adds an example DisplayCustomMessage block for the header slot"
