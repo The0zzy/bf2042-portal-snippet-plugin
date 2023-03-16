@@ -1,0 +1,122 @@
+<html>
+  <head>
+    <title>Manage Snippets Dialog</title>
+    <style>
+      body {
+        background-color: #000;
+      }
+      .dialogFrame {
+        margin: 15% 33% auto;
+        background-color: #333;
+        border: 1px solid;
+        border-color: #fff;
+      }
+      .dialogHeader {
+        background-color: #26ffdf;
+        padding: 5px;
+        color: #000;
+        font-weight: bold;
+        font-size: 18px;
+        overflow: auto;
+      }
+      .dialogTitle {
+        text-transform: uppercase;
+        float: left;
+      }
+      .dialogClose {
+        cursor: pointer;
+        float: right;
+      }
+      .dialogClose:hover {
+        color: #fff;
+      }
+      .dialogBody {
+        color: #fff;
+        padding: 5px;
+        overflow: scroll;
+      }
+      .dialogFooter {
+        text-align: center;
+      }
+      .dialogButton {
+        cursor: pointer;
+        text-align: center;
+        vertical-align: baseline;
+        min-width: 164px;
+        line-height: 36px;
+        padding: 3px 10px;
+        text-transform: uppercase;
+        color: #fff;
+        background-color: #999;
+        border-radius: 0;
+        border: none;
+        box-sizing: border-box;
+        font-weight: bold;
+        font-size: 18px;
+        margin: 3px;
+      }
+      .dialogButton:hover {
+        color: #000;
+        background-color: #26ffdf;
+      }
+      a {
+        color: #999;
+        cursor: pointer;
+      }
+      a:hover {
+        color: #fff;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="dialogFrame">
+      <div class="dialogHeader">
+        <div class="dialogTitle">Manage Snippets</div>
+        <div class="dialogClose">X</div>
+      </div>
+      <div class="dialogBody">
+        <ul>
+          <li style="list-style: none;">Favourites</li>
+          <ul id="favList">
+            <li>Fav1&nbsp;&nbsp;&nbsp;<a>[delete]</a></li>
+            <li>Fav2&nbsp;&nbsp;&nbsp;<a>[delete]</a></li>
+          </ul>
+          <br />
+          <li style="list-style: none;">Private</li>
+          <ul id="privList">
+            <li>
+              Private1&nbsp;&nbsp;&nbsp;
+              <a>[edit]</a>
+              <a>[favor]</a>
+              <a>[delete]</a>
+            </li>
+            <li>
+              Private2&nbsp;&nbsp;&nbsp;
+              <a>[edit]</a>
+              <a>[favor]</a>
+              <a>[delete]</a>
+            </li>
+          </ul>
+          <br />
+          <br />
+          <li style="list-style: none;"><b>Pre-Defined</b></li>
+          <br />
+          <li style="list-style: none;">Vector</li>
+          <ul>
+            <li>Snippet1&nbsp;&nbsp;&nbsp;<a>[favor]</a></li>
+            <li>Snippet2&nbsp;&nbsp;&nbsp;<a>[favor]</a></li>
+          </ul>
+          <li style="list-style: none;">Message</li>
+          <ul>
+            <li>Snippet3&nbsp;&nbsp;&nbsp;<a>[favor]</a></li>
+            <li>Snippet4&nbsp;&nbsp;&nbsp;<a>[favor]</a></li>
+          </ul>
+        </ul>
+      </div>
+      <div class="dialogFooter">
+        <input type="button" class="dialogButton" value="OK" />
+        <input type="button" class="dialogButton" value="CANCEL" />
+      </div>
+    </div>
+  </body>
+</html>
