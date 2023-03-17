@@ -6,6 +6,57 @@
 
   plugin.initializeWorkspace = function () {};
 
+  function showDialog(dialogUrl, initFn) {
+    try {
+      fetch(dialogUrl)
+        .then((response) => {
+          if (!response.ok) {
+            logError(
+              "Did not receive proper response for manage dialog url '" +
+                url +
+                "'"
+            );
+          } else {
+            response
+              .text()
+              .then((data) => {
+                logInfo("Retrieved following dialog data:\n", data);
+                let dialogDoc = new DOMParser().parseFromString(
+                  data,
+                  "text/html"
+                );
+                let dialogBackdrop = dialogDoc.getElementById("dialogBackdrop");
+                let styleLink = document.createElement("link");
+                styleLink.setAttribute("rel", "stylesheet");
+                styleLink.setAttribute(
+                  "href",
+                  plugin.getUrl(
+                    dialogDoc.head.querySelector("link").getAttribute("href")
+                  )
+                );
+                document.head.appendChild(styleLink);
+                document.body.appendChild(dialogBackdrop);
+                initFn();
+              })
+              .catch((reason) => {
+                logError(
+                  "Couldn't parse response data for dialog url '" +
+                    dialogUrl +
+                    "'\n" +
+                    reason
+                );
+              });
+          }
+        })
+        .catch((reason) => {
+          logError("Couldn't fetch dialog url '" + dialogUrl + "'\n" + reason);
+        });
+    } catch (e) {
+      logError("Failed to open dialog!", e);
+      alert("Failed to open dialog!\nCheck console for details.");
+    }
+  }
+
   function insertSnippetFromUrl(url) {
     try {
       fetch(url)
@@ -19,11 +70,7 @@
               .text()
               .then((data) => {
                 logInfo("Retrieved following snippet data:\n", data);
-                try {
-                  loadXml(data);
-                } catch (error) {
-                  logError("Failed to load snippet to workspace!", error);
-                }
+                insertSnippetFromText(data);
               })
               .catch((reason) => {
                 logError(
@@ -283,7 +330,10 @@
     weight: 100,
     preconditionFn: () => "enabled",
     callback: () => {
-      alert("Dialog to manage snippets coming soon!");
+      let dialogUrl = plugin.getUrl("view/manage.html");
+      showDialog(dialogUrl, () => {
+        alert("manage snippets!");
+      });
     },
   };
 
