@@ -2,6 +2,7 @@
   const pluginId = "bf2042-portal-snippet-plugin";
   const plugin = BF2042Portal.Plugins.getPlugin(pluginId);
   const workspaceScope = _Blockly.ContextMenuRegistry.ScopeType.WORKSPACE;
+  const blockScope = _Blockly.ContextMenuRegistry.ScopeType.BLOCK;
 
   plugin.initializeWorkspace = function () {};
 
@@ -40,6 +41,14 @@
     } catch (e) {
       logError("Failed to load Snippet!", e);
       alert("Failed to load snippet!\nCheck console for details.");
+    }
+  }
+
+  function insertSnippetFromText(xmlText) {
+    try {
+      loadXml(xmlText);
+    } catch (error) {
+      logError("Failed to load snippet to workspace!", error);
     }
   }
 
@@ -207,6 +216,66 @@
     }
   }
 
+  function blockToXml(block) {
+    const xmlDom = _Blockly.Xml.blockToDomWithXY(block, true);
+    _Blockly.Xml.deleteNext(xmlDom);
+
+    const xmlText = _Blockly.Xml.domToText(xmlDom).replace(
+      'xmlns="https://developers.google.com/blockly/xml"',
+      ""
+    );
+
+    return xmlText;
+  }
+
+  function saveXml(blocks) {
+    const workspace = _Blockly.getMainWorkspace();
+
+    try {
+      let xmlText = "";
+
+      if (blocks && blocks.length > 0) {
+        for (let i = 0; i < blocks.length; i++) {
+          xmlText += blockToXml(blocks[i]);
+        }
+
+        return xmlText;
+      } else {
+        let xmlDom = _Blockly.Xml.workspaceToDom(workspace, true);
+
+        const variablesXml = xmlDom.querySelector("variables");
+
+        if (variablesXml) {
+          xmlDom.removeChild(variablesXml);
+        }
+
+        return _Blockly.Xml.domToText(xmlDom)
+          .replace(
+            '<xml xmlns="https://developers.google.com/blockly/xml">',
+            ""
+          )
+          .replace("</xml>", "");
+      }
+    } catch (e) {
+      BF2042Portal.Shared.logError("Failed to save workspace!", e);
+    }
+
+    return undefined;
+  }
+
+  function getSelectedBlocks(scope) {
+    let blocks = undefined;
+
+    if (
+      !blocks &&
+      (_Blockly.selected || (scope !== undefined && scope.block))
+    ) {
+      blocks = [_Blockly.selected || scope.block];
+    }
+
+    return blocks;
+  }
+
   const manageSnippetsItem = {
     id: "manageSnippets",
     displayText: "Manage Snippets",
@@ -225,6 +294,61 @@
     weight: 100,
     preconditionFn: () => "disabled",
     callback: () => {},
+  };
+
+  const addPrivateSnippetItem = {
+    id: "addPrivateSnippetItem",
+    displayText: "Add as Private Snippet",
+    scopeType: blockScope,
+    weight: 100,
+    preconditionFn: () => "enabled",
+    callback: (scope) => {
+      const errorMessage = "Couldn't get selection as snippet!";
+      try {
+        const blocks = getSelectedBlocks(scope);
+        const xmlText = saveXml(blocks);
+
+        if (!xmlText) {
+          alert(errorMessage);
+          return;
+        }
+
+        let snippetName = "";
+        while (snippetName === "") {
+          snippetName = prompt("Specifiy the name of the snippet:");
+          if (snippetName === "") {
+            alert("The name cannot be empty!");
+          }
+        }
+        if (!snippetName) {
+          return;
+        }
+
+        const privateSnippetItem = {
+          id: "privateSnippetItem" + crypto.randomUUID(),
+          displayText: snippetName,
+          scopeType: workspaceScope,
+          weight: 100,
+          preconditionFn: () => "enabled",
+          callback: () => {
+            insertSnippetFromText(xmlText);
+          },
+        };
+
+        plugin.registerItem(privateSnippetItem);
+
+        if (
+          insertSnippetPrivateMenu.options.length == 1 &&
+          insertSnippetPrivateMenu.options[0] == "items.emptySnippetItem"
+        ) {
+          insertSnippetPrivateMenu.options.pop();
+        }
+        insertSnippetPrivateMenu.options.push("items." + privateSnippetItem.id);
+      } catch (e) {
+        BF2042Portal.Shared.logError(errorMessage, e);
+        alert(errorMessage);
+      }
+    },
   };
 
   const insertSnippetFavouritesMenu = plugin.createMenu(
@@ -267,6 +391,8 @@
   plugin.registerMenu(insertSnippetPrivateMenu);
   plugin.registerItem(emptySnippetItem);
   plugin.registerItem(manageSnippetsItem);
+  plugin.registerItem(addPrivateSnippetItem);
 
   _Blockly.ContextMenuRegistry.registry.register(snippetsMenu);
+  _Blockly.ContextMenuRegistry.registry.register(addPrivateSnippetItem);
 })();
