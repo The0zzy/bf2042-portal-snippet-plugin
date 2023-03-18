@@ -6,6 +6,49 @@
 
   plugin.initializeWorkspace = function () {};
 
+  function hideDialog() {
+    document.getElementById("dialogBackdrop").style.display = "none";
+  }
+
+  function showManageDialog() {
+    showDialog(plugin.getUrl("view/manage.html"), initManageDialog);
+  }
+
+  function initManageDialog() {
+    document
+      .getElementById("dialogClose")
+      .addEventListener("click", hideDialog);
+    document
+      .getElementById("dialogButtonOk")
+      .addEventListener("click", hideDialog);
+    document
+      .getElementById("dialogButtonCancel")
+      .addEventListener("click", hideDialog);
+    document.getElementById("dialogBackdrop").addEventListener("click", (e) => {
+      if (e.target === dialogBackdrop) {
+        hideDialog();
+      }
+    });
+    document
+      .getElementById("addPrivateSnippet")
+      .addEventListener("click", () => {
+        showDialog(plugin.getUrl("view/edit.html"), () => {
+          document
+            .getElementById("dialogClose")
+            .addEventListener("click", showManageDialog);
+          document
+            .getElementById("dialogButtonOk")
+            .addEventListener("click", showManageDialog);
+          document
+            .getElementById("dialogButtonCancel")
+            .addEventListener("click", showManageDialog);
+          document
+            .getElementById("dialogBackdrop")
+            .addEventListener("click", () => {});
+        });
+      });
+  }
+
   function showDialog(dialogUrl, initFn) {
     try {
       fetch(dialogUrl)
@@ -26,15 +69,18 @@
                   "text/html"
                 );
                 let dialogBackdrop = dialogDoc.getElementById("dialogBackdrop");
-                let styleLink = document.createElement("link");
-                styleLink.setAttribute("rel", "stylesheet");
+                let styleLink = dialogDoc.head.querySelector("link");
                 styleLink.setAttribute(
                   "href",
-                  plugin.getUrl(
-                    dialogDoc.head.querySelector("link").getAttribute("href")
-                  )
+                  plugin.getUrl(styleLink.getAttribute("href"))
                 );
                 document.head.appendChild(styleLink);
+                let existingBackdrop = document.getElementById(
+                  "dialogBackdrop"
+                );
+                if (existingBackdrop) {
+                  document.body.removeChild(existingBackdrop);
+                }
                 document.body.appendChild(dialogBackdrop);
                 initFn();
               })
@@ -331,9 +377,7 @@
     preconditionFn: () => "enabled",
     callback: () => {
       let dialogUrl = plugin.getUrl("view/manage.html");
-      showDialog(dialogUrl, () => {
-        alert("manage snippets!");
-      });
+      showDialog(dialogUrl, initManageDialog);
     },
   };
 
