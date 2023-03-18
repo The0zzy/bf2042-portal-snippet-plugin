@@ -3,8 +3,24 @@
   const plugin = BF2042Portal.Plugins.getPlugin(pluginId);
   const workspaceScope = _Blockly.ContextMenuRegistry.ScopeType.WORKSPACE;
   const blockScope = _Blockly.ContextMenuRegistry.ScopeType.BLOCK;
+  let pluginData = {
+    favourites: [1, 3, 5],
+    privates: [
+      {
+        id: 1,
+        name: "private1",
+        xml: '<block name="private1"></block>',
+      },
+    ],
+    predefined: [],
+  };
 
-  plugin.initializeWorkspace = function () {};
+  plugin.initializeWorkspace = function () {
+    let loadedData = BF2042Portal.Shared.loadFromLocalStorage(pluginId);
+    if (loadedData.favourites) {
+      pluginData = loadedData;
+    }
+  };
 
   function hideDialog() {
     document.getElementById("dialogBackdrop").style.display = "none";
@@ -29,6 +45,7 @@
         hideDialog();
       }
     });
+
     document
       .getElementById("addPrivateSnippet")
       .addEventListener("click", () => {
