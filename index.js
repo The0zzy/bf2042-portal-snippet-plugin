@@ -4,14 +4,8 @@
   const workspaceScope = _Blockly.ContextMenuRegistry.ScopeType.WORKSPACE;
   const blockScope = _Blockly.ContextMenuRegistry.ScopeType.BLOCK;
   let pluginData = {
-    favourites: [1, 3, 5, "private1"],
-    privates: [
-      {
-        id: "private1",
-        name: "private1",
-        xml: '<block name="private1"></block>',
-      },
-    ],
+    favourites: [],
+    privates: [],
     predefined: [],
   };
 
@@ -275,6 +269,30 @@
         "items.separatorWorkspace",
       ];
       logInfo("Creating Snippets Menu...");
+      insertSnippetPrivateMenu.options = ["items.emptySnippetItem"];
+      pluginData.privates.forEach((item)=>{
+        const privateSnippetItem = {
+          id: item.id,
+          displayText: item.name,
+          scopeType: workspaceScope,
+          weight: 100,
+          preconditionFn: () => "enabled",
+          callback: () => {
+            insertSnippetFromText(item.xml);
+          },
+        };
+  
+        plugin.registerItem(privateSnippetItem);
+  
+        if (
+          insertSnippetPrivateMenu.options.length == 1 &&
+          insertSnippetPrivateMenu.options[0] == "items.emptySnippetItem"
+        ) {
+          insertSnippetPrivateMenu.options.pop();
+        }
+        insertSnippetPrivateMenu.options.push("items." + privateSnippetItem.id);  
+      })
+      
       pluginData.predefined.forEach((item) => {
         let menuId = "insertMenu" + item.category;
         let menuName = item.category;
@@ -377,6 +395,15 @@
     return blocks;
   }
 
+  function savePluginData(){
+    let dataToSave = {
+      favourites: pluginData.favourites,
+      privates: pluginData.privates,
+      predefined: []
+    }
+    BF2042Portal.Shared.saveToLocalStorage(pluginId, dataToSave);
+  }
+
   const manageSnippetsItem = {
     id: "manageSnippets",
     displayText: "Manage Snippets",
@@ -426,26 +453,14 @@
           return;
         }
 
-        const privateSnippetItem = {
-          id: "privateSnippetItem" + crypto.randomUUID(),
-          displayText: snippetName,
-          scopeType: workspaceScope,
-          weight: 100,
-          preconditionFn: () => "enabled",
-          callback: () => {
-            insertSnippetFromText(xmlText);
-          },
-        };
-
-        plugin.registerItem(privateSnippetItem);
-
-        if (
-          insertSnippetPrivateMenu.options.length == 1 &&
-          insertSnippetPrivateMenu.options[0] == "items.emptySnippetItem"
-        ) {
-          insertSnippetPrivateMenu.options.pop();
-        }
-        insertSnippetPrivateMenu.options.push("items." + privateSnippetItem.id);
+        let privateSnippetId = "privateSnippetItem" + crypto.randomUUID();
+        pluginData.privates.push({
+          id: privateSnippetId,
+          name: snippetName,
+          xml: xmlText
+        });
+        savePluginData();
+        buildInsertSnippetMenu();
       } catch (e) {
         BF2042Portal.Shared.logError(errorMessage, e);
         alert(errorMessage);
