@@ -2,72 +2,84 @@
     "items":
     [
         {
+            "id": "createVector000",
             "category": "Vector",
             "url": "snippets/vector/createVector000.xml",
             "name": "CreateVector(000)",
             "description": "Adds a CreateVector block with three literals set as 0"
         },
         {
+            "id": "setYawToObject",
             "category": "Vector",
             "url": "snippets/vector/setYawToObject.xml",
             "name": "SetYawToObject",
             "description": "A subroutine block that calculates the necessary yaw of player or vehicle for teleporting in order to face in the direction of the given object/position-vector"
         },
         {
+            "id": "bounceBackPlayer",
             "category": "Vector",
             "url": "snippets/vector/bounceBackPlayer.xml",
             "name": "Bounce Back Player",
             "description": "Adds two subroutines which enable bouncing back a player in the opposite direction of his current movement"
         },
         {
+            "id": "customHeaderMessage",
             "category": "Message",
             "url": "snippets/message/customHeaderMessage.xml",
             "name": "Custom Header Message",
             "description": "Adds an example DisplayCustomMessage block for the header slot"
         },
         {
+            "id": "for",
             "category": "Loop",
             "url": "snippets/loop/for.xml",
             "name": "For-Loop",
             "description": "Adds a simple loop from 0 to 9 by 1"
         },
         {
+            "id": "forArray",
             "category": "Loop",
             "url": "snippets/loop/forArray.xml",
             "name": "For-Loop (Array)",
             "description": "Adds a simple loop from 0 to CountOf() by 1"
         },
         {
+            "id": "tickrate",
             "category": "Loop",
             "url": "snippets/loop/tickrate.xml",
             "name": "Tickrate",
             "description": "Adds a complex set of rules and a tick subroutine which is called by every server-tick"
         },
         {
+            "id": "while",
             "category": "Loop",
             "url": "snippets/loop/while.xml",
             "name": "While-Loop",
             "description": "Adds a while-loop with a wait block"
         },
         {
+            "id": "executeEverySecondGlobal",
             "category": "Time",
             "url": "snippets/time/executeEverySecondGlobal.xml",
             "name": "Execute Every Second (Global)",
             "description": "Adds two rules and one subroutine that is executed every second in the global context"
         },
         {
+            "id": "executeEverySecondPlayer",
             "category": "Time",
             "url": "snippets/time/executeEverySecondPlayer.xml",
             "name": "Execute Every Second (Player)",
             "description": "Adds two rules and one subroutine that is executed every second in each player context"
         },
         {
+            "id": "executeEverySecondTeam",
             "category": "Time",
             "url": "snippets/time/executeEverySecondTeam.xml",
             "name": "Execute Every Second (Team)",
             "description": "Adds two rules and one subroutine that is executed every second for each team"
         },
         {
+            "id": "teamSwitchUtility",
             "category": "Gameplay",
             "url": "snippets/gameplay/teamSwitchUtility.xml",
             "name": "Teamswitch Utility",

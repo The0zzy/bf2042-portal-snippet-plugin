@@ -4,22 +4,15 @@
   const workspaceScope = _Blockly.ContextMenuRegistry.ScopeType.WORKSPACE;
   const blockScope = _Blockly.ContextMenuRegistry.ScopeType.BLOCK;
   let pluginData = {
-    favourites: [1, 3, 5],
+    favourites: [1, 3, 5, "private1"],
     privates: [
       {
-        id: 1,
+        id: "private1",
         name: "private1",
         xml: '<block name="private1"></block>',
       },
     ],
     predefined: [],
-  };
-
-  plugin.initializeWorkspace = function () {
-    let loadedData = BF2042Portal.Shared.loadFromLocalStorage(pluginId);
-    if (loadedData.favourites) {
-      pluginData = loadedData;
-    }
   };
 
   function hideDialog() {
@@ -274,53 +267,51 @@
 
   function buildInsertSnippetMenu() {
     try {
+      let predefinedCategoryMenus = [];
+      insertSnippetMenu.options = [];
+      insertSnippetMenu.options = [
+        "menus.insertSnippetFavouritesMenu",
+        "menus.insertSnippetPrivateMenu",
+        "items.separatorWorkspace",
+      ];
       logInfo("Creating Snippets Menu...");
-      let categoryMenus = [];
-      fetch(plugin.getUrl("snippets/index.json"))
-        .then((response) => {
-          response.json().then((data) => {
-            logInfo("Retrieved snippets index:\n", data);
-            data.items.forEach((item) => {
-              let menuId = "insertMenu" + item.category;
-              let menuName = item.category;
-              let insertSnippetItem = {
-                id: "insertItem" + crypto.randomUUID(),
-                displayText: item.name,
-                scopeType: workspaceScope,
-                weight: 100,
-                preconditionFn: () => "enabled",
-                callback: () => {
-                  insertSnippetFromUrl(plugin.getUrl(item.url));
-                },
-              };
-              plugin.registerItem(insertSnippetItem);
-              if (!categoryMenus.some((element) => menuId === element.id)) {
-                let menu = plugin.createMenu(menuId, menuName, workspaceScope);
-                categoryMenus.push(menu);
-                plugin.registerMenu(menu);
-                insertSnippetMenu.options.push("menus." + menuId);
-                logInfo("Created Snippets Sub-Menu '" + menuName + "'");
-              }
-              let menu = categoryMenus.find(
-                (element) => element.id === "insertMenu" + item.category
-              );
-              if (menu) {
-                menu.options.push("items." + insertSnippetItem.id);
-                logInfo(
-                  "Added Snippet '" + insertSnippetItem.displayText + "'"
-                );
-              } else {
-                logError(
-                  "Couldn't find menu '" + "insertMenu" + item.category + "'"
-                );
-              }
-            });
-            logInfo("Created Snippets Menu!");
-          });
-        })
-        .catch((reason) => {
-          logError("Failed to retrieve snippets index:\n", reason);
-        });
+      pluginData.predefined.forEach((item) => {
+        let menuId = "insertMenu" + item.category;
+        let menuName = item.category;
+        let menu = null;
+        if (
+          !insertSnippetMenu.options.some(
+            (element) => element === "menus." + menuId
+          )
+        ) {
+          menu = plugin.createMenu(menuId, menuName, workspaceScope);
+          plugin.registerMenu(menu);
+          insertSnippetMenu.options.push("menus." + menuId);
+          predefinedCategoryMenus.push(menu);
+          logInfo("Created Snippets Sub-Menu '" + menuName + "'");
+        }
+        menu = predefinedCategoryMenus.find((element) => element.id === menuId);
+        if (
+          !menu.options.some((element) => {
+            element === "items." + item.id;
+          })
+        ) {
+          let insertSnippetItem = {
+            id: item.id,
+            displayText: item.name,
+            scopeType: workspaceScope,
+            weight: 100,
+            preconditionFn: () => "enabled",
+            callback: () => {
+              insertSnippetFromUrl(plugin.getUrl(item.url));
+            },
+          };
+          plugin.registerItem(insertSnippetItem);
+          menu.options.push("items." + insertSnippetItem.id);
+          logInfo("Added Snippet '" + insertSnippetItem.displayText + "'");
+        }
+      });
+      logInfo("Created Snippets Menu!");
     } catch (error) {
       logError("Failed to build snippets menu:\n", error);
     }
@@ -481,11 +472,6 @@
     "Insert Snippet",
     workspaceScope
   );
-  insertSnippetMenu.options = [
-    "menus.insertSnippetFavouritesMenu",
-    "menus.insertSnippetPrivateMenu",
-    "items.separatorWorkspace",
-  ];
 
   const snippetsMenu = plugin.createMenu(
     "snippetsMenu",
@@ -494,16 +480,39 @@
   );
   snippetsMenu.options = ["menus.insertSnippetMenu", "items.manageSnippets"];
 
-  buildInsertSnippetMenu();
+  plugin.initializeWorkspace = function () {
+    let loadedData = BF2042Portal.Shared.loadFromLocalStorage(pluginId);
+    if (loadedData.favourites) {
+      pluginData = loadedData;
+    }
+    fetch(plugin.getUrl("snippets/index.json"))
+      .then((response) => {
+        response.json().then((data) => {
+          logInfo("Retrieved snippets index:\n", data);
+          pluginData.predefined = data.items;
+          logInfo("added predefined snippets to plugin data.");
+          buildInsertSnippetMenu();
 
-  plugin.registerMenu(snippetsMenu);
-  plugin.registerMenu(insertSnippetMenu);
-  plugin.registerMenu(insertSnippetFavouritesMenu);
-  plugin.registerMenu(insertSnippetPrivateMenu);
-  plugin.registerItem(emptySnippetItem);
-  plugin.registerItem(manageSnippetsItem);
-  plugin.registerItem(addPrivateSnippetItem);
+          plugin.registerMenu(snippetsMenu);
+          plugin.registerMenu(insertSnippetMenu);
+          plugin.registerMenu(insertSnippetFavouritesMenu);
+          plugin.registerMenu(insertSnippetPrivateMenu);
+          plugin.registerItem(emptySnippetItem);
+          plugin.registerItem(manageSnippetsItem);
+          plugin.registerItem(addPrivateSnippetItem);
 
-  _Blockly.ContextMenuRegistry.registry.register(snippetsMenu);
-  _Blockly.ContextMenuRegistry.registry.register(addPrivateSnippetItem);
+          try {
+            _Blockly.ContextMenuRegistry.registry.register(snippetsMenu);
+            _Blockly.ContextMenuRegistry.registry.register(
+              addPrivateSnippetItem
+            );
+          } catch (error) {
+            logError("Couldn't register menu items.", error);
+          }
+        });
+      })
+      .catch((reason) => {
+        logError("Failed to retrieve snippets index:\n", reason);
+      });
+  };
 })();
