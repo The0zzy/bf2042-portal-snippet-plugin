@@ -79,9 +79,8 @@
                   plugin.getUrl(styleLink.getAttribute("href"))
                 );
                 document.head.appendChild(styleLink);
-                let existingBackdrop = document.getElementById(
-                  "dialogBackdrop"
-                );
+                let existingBackdrop =
+                  document.getElementById("dialogBackdrop");
                 if (existingBackdrop) {
                   document.body.removeChild(existingBackdrop);
                 }
@@ -171,8 +170,9 @@
     const variables = [];
 
     variableBlocks.forEach((e) => {
-      const objectType = e.querySelector("field[name='OBJECTTYPE']")
-        .textContent;
+      const objectType = e.querySelector(
+        "field[name='OBJECTTYPE']"
+      ).textContent;
       const variableName = e.querySelector("field[name='VAR']").textContent;
 
       if (
@@ -270,7 +270,7 @@
       ];
       logInfo("Creating Snippets Menu...");
       insertSnippetPrivateMenu.options = ["items.emptySnippetItem"];
-      pluginData.privates.forEach((item)=>{
+      pluginData.privates.forEach((item) => {
         const privateSnippetItem = {
           id: item.id,
           displayText: item.name,
@@ -281,18 +281,34 @@
             insertSnippetFromText(item.xml);
           },
         };
-  
+
         plugin.registerItem(privateSnippetItem);
-  
+
         if (
           insertSnippetPrivateMenu.options.length == 1 &&
           insertSnippetPrivateMenu.options[0] == "items.emptySnippetItem"
         ) {
           insertSnippetPrivateMenu.options.pop();
         }
-        insertSnippetPrivateMenu.options.push("items." + privateSnippetItem.id);  
-      })
-      
+        insertSnippetPrivateMenu.options.push("items." + privateSnippetItem.id);
+
+        if (
+          pluginData.favourites.find((element) => {
+            element === privateSnippetItem.id;
+          })
+        ) {
+          if (
+            insertSnippetFavouritesMenu.options.length == 1 &&
+            insertSnippetFavouritesMenu.options[0] == "items.emptySnippetItem"
+          ) {
+            insertSnippetFavouritesMenu.options.pop();
+          }
+          insertSnippetFavouritesMenu.options.push(
+            "items." + privateSnippetItem.id
+          );
+        }
+      });
+
       pluginData.predefined.forEach((item) => {
         let menuId = "insertMenu" + item.category;
         let menuName = item.category;
@@ -327,6 +343,22 @@
           plugin.registerItem(insertSnippetItem);
           menu.options.push("items." + insertSnippetItem.id);
           logInfo("Added Snippet '" + insertSnippetItem.displayText + "'");
+
+          if (
+            pluginData.favourites.find((element) => {
+              element === insertSnippetItem.id;
+            })
+          ) {
+            if (
+              insertSnippetFavouritesMenu.options.length == 1 &&
+              insertSnippetFavouritesMenu.options[0] == "items.emptySnippetItem"
+            ) {
+              insertSnippetFavouritesMenu.options.pop();
+            }
+            insertSnippetFavouritesMenu.options.push(
+              "items." + insertSnippetItem.id
+            );
+          }
         }
       });
       logInfo("Created Snippets Menu!");
@@ -395,12 +427,12 @@
     return blocks;
   }
 
-  function savePluginData(){
+  function savePluginData() {
     let dataToSave = {
       favourites: pluginData.favourites,
       privates: pluginData.privates,
-      predefined: []
-    }
+      predefined: [],
+    };
     BF2042Portal.Shared.saveToLocalStorage(pluginId, dataToSave);
   }
 
@@ -457,7 +489,7 @@
         pluginData.privates.push({
           id: privateSnippetId,
           name: snippetName,
-          xml: xmlText
+          xml: xmlText,
         });
         savePluginData();
         buildInsertSnippetMenu();
