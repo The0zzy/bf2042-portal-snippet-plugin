@@ -17,6 +17,64 @@
     showDialog(plugin.getUrl("view/manage.html"), initManageDialog);
   }
 
+  function showEditDialog(id) {
+    showDialog(plugin.getUrl("view/edit.html"), () => {
+      initEditDialog(id);
+    });
+  }
+
+  function initEditDialog(id) {
+    document
+      .getElementById("dialogClose")
+      .addEventListener("click", showManageDialog);
+    document
+      .getElementById("dialogButtonOk")
+      .addEventListener("click", showManageDialog);
+    document
+      .getElementById("dialogButtonCancel")
+      .addEventListener("click", showManageDialog);
+    document
+      .getElementById("dialogBackdrop")
+      .addEventListener("click", () => {});
+    if (id) {
+      let editItem = pluginData.privates.find((element) => {
+        element.id === id;
+      });
+      if (editItem) {
+        document.getElementById("snippetName").value = editItem.name;
+        document.getElementById("snippetContent").innerText = editItem.xml;
+      }
+    } else {
+    }
+  }
+
+  function addFavorite(id) {
+    let favIndex = pluginData.favourites.indexOf(id);
+    if (favIndex == -1) {
+      pluginData.favourites.push(id);
+    }
+    savePluginData();
+    buildInsertSnippetMenu();
+  }
+
+  function removeFavorite(id) {
+    let favIndex = pluginData.favourites.indexOf(id);
+    if (favIndex > -1) {
+      pluginData.favourites.splice(favIndex, 1);
+    }
+    savePluginData();
+    buildInsertSnippetMenu();
+  }
+
+  function removePrivate(id) {
+    let favIndex = pluginData.privates.indexOf(id);
+    if (favIndex > -1) {
+      pluginData.privates.splice(favIndex, 1);
+    }
+    savePluginData();
+    buildInsertSnippetMenu();
+  }
+
   function initManageDialog() {
     document
       .getElementById("dialogClose")
@@ -31,6 +89,56 @@
       if (e.target === dialogBackdrop) {
         hideDialog();
       }
+    });
+
+    let favList = document.getElementById("favList");
+    favList.innerHTML = "";
+    pluginData.favourites.forEach((item) => {
+      let favItem = document.createElement("li");
+      let itemText = document.createElement("span");
+      itemText.innerText = item.name + "&nbsp&nbsp&nbsp";
+      favItem.appendChild(itemText);
+      let itemLink = document.createElement("a");
+      itemLink.innerText = "[remove]";
+      itemLink.addEventListener("click", () => {
+        removeFavorite(item.id);
+        initManageDialog();
+      });
+      favItem.appendChild(itemLink);
+      favList.appendChild(favItem);
+    });
+
+    let privList = document.getElementById("privList");
+    privList.innerHTML = "";
+    pluginData.privates.forEach((item) => {
+      let privItem = document.createElement("li");
+      let itemText = document.createElement("span");
+      itemText.innerText = item.name + "&nbsp&nbsp&nbsp";
+      privItem.appendChild(itemText);
+
+      let itemLink = document.createElement("a");
+      itemLink.innerText = "[edit]";
+      itemLink.addEventListener("click", () => {
+        showEditDialog(item.id);
+      });
+      privItem.appendChild(itemLink);
+
+      itemLink = document.createElement("a");
+      itemLink.innerText = "[favor]";
+      itemLink.addEventListener("click", () => {
+        addFavorite(item.id);
+        initManageDialog();
+      });
+      privItem.appendChild(itemLink);
+
+      itemLink = document.createElement("a");
+      itemLink.innerText = "[delete]";
+      itemLink.addEventListener("click", () => {
+        removePrivate(item.id);
+        initManageDialog();
+      });
+      privItem.appendChild(itemLink);
+      privList.appendChild(privItem);
     });
 
     document
