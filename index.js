@@ -17,18 +17,15 @@
     showDialog(plugin.getUrl("view/manage.html"), initManageDialog);
   }
 
-  function showEditDialog(id) {
+  function showEditDialog(editId) {
     showDialog(plugin.getUrl("view/edit.html"), () => {
-      initEditDialog(id);
+      initEditDialog(editId);
     });
   }
 
-  function initEditDialog(id) {
+  function initEditDialog(editId) {
     document
       .getElementById("dialogClose")
-      .addEventListener("click", showManageDialog);
-    document
-      .getElementById("dialogButtonOk")
       .addEventListener("click", showManageDialog);
     document
       .getElementById("dialogButtonCancel")
@@ -36,15 +33,52 @@
     document
       .getElementById("dialogBackdrop")
       .addEventListener("click", () => {});
-    if (id) {
-      let editItem = pluginData.privates.find((element) => {
-        element.id === id;
-      });
-      if (editItem) {
-        document.getElementById("snippetName").value = editItem.name;
-        document.getElementById("snippetContent").innerText = editItem.xml;
-      }
+
+    let editItem = pluginData.privates.find(({ id }) => id === editId);
+
+    if (editItem) {
+      document.getElementById("snippetName").value = editItem.name;
+      document.getElementById("snippetContent").value = editItem.xml;
+      document
+        .getElementById("dialogButtonOk")
+        .addEventListener("click", () => {
+          let validationItem = {
+            id: editItem.id,
+            name: "",
+            xml: "",
+          };
+          validationItem.name = document.getElementById("snippetName").value;
+          validationItem.xml = document.getElementById("snippetContent").value;
+          if (validateEditPrivateSnippet(validationItem).length == 0) {
+            editItem.name = validationItem.name;
+            editItem.xml = validationItem.xml;
+            savePluginData();
+            buildInsertSnippetMenu();
+            showManageDialog();
+          } else {
+            alert(issues);
+          }
+        });
     } else {
+      editItem = {
+        id: "privateSnippetItem" + crypto.randomUUID(),
+        name: "",
+        xml: "",
+      };
+      document
+        .getElementById("dialogButtonOk")
+        .addEventListener("click", () => {
+          editItem.name = document.getElementById("snippetName").value;
+          editItem.xml = document.getElementById("snippetContent").value;
+          if (validateNewPrivateSnippet(editItem).length == 0) {
+            pluginData.privates.push(editItem);
+            savePluginData();
+            buildInsertSnippetMenu();
+            showManageDialog();
+          } else {
+            alert(issues);
+          }
+        });
     }
   }
 
@@ -147,8 +181,16 @@
       itemLink = document.createElement("a");
       itemLink.innerText = "[delete]";
       itemLink.addEventListener("click", () => {
-        removePrivate(item.id);
-        initManageDialog();
+        if (
+          confirm(
+            "Do you really want to delete your private snippet '" +
+              item.name +
+              "'?"
+          )
+        ) {
+          removePrivate(item.id);
+          initManageDialog();
+        }
       });
       privItem.appendChild(itemLink);
       privList.appendChild(privItem);
@@ -182,28 +224,20 @@
         initManageDialog();
       });
       predItem.appendChild(itemLink);
+
+      itemLink = document.createElement("a");
+      itemLink.innerText = "[info]";
+      itemLink.addEventListener("click", () => {
+        alert(item.description);
+      });
       predItem.appendChild(itemLink);
+
       predCatList.appendChild(predItem);
     });
 
     document
       .getElementById("addPrivateSnippet")
-      .addEventListener("click", () => {
-        showDialog(plugin.getUrl("view/edit.html"), () => {
-          document
-            .getElementById("dialogClose")
-            .addEventListener("click", showManageDialog);
-          document
-            .getElementById("dialogButtonOk")
-            .addEventListener("click", showManageDialog);
-          document
-            .getElementById("dialogButtonCancel")
-            .addEventListener("click", showManageDialog);
-          document
-            .getElementById("dialogBackdrop")
-            .addEventListener("click", () => {});
-        });
-      });
+      .addEventListener("click", showEditDialog);
   }
 
   function showDialog(dialogUrl, initFn) {
@@ -423,6 +457,7 @@
       ];
       logInfo("Creating Snippets Menu...");
       insertSnippetPrivateMenu.options = ["items.emptySnippetItem"];
+      insertSnippetFavouritesMenu.options = ["items.emptySnippetItem"];
       pluginData.privates.forEach((item) => {
         const privateSnippetItem = {
           id: item.id,
@@ -443,22 +478,16 @@
         ) {
           insertSnippetPrivateMenu.options.pop();
         }
-        insertSnippetPrivateMenu.options.push("items." + privateSnippetItem.id);
+        insertSnippetPrivateMenu.options.push("items." + item.id);
 
-        if (
-          pluginData.favourites.find((element) => {
-            element === privateSnippetItem.id;
-          })
-        ) {
+        if (pluginData.favourites.indexOf(item.id) > -1) {
           if (
             insertSnippetFavouritesMenu.options.length == 1 &&
             insertSnippetFavouritesMenu.options[0] == "items.emptySnippetItem"
           ) {
             insertSnippetFavouritesMenu.options.pop();
           }
-          insertSnippetFavouritesMenu.options.push(
-            "items." + privateSnippetItem.id
-          );
+          insertSnippetFavouritesMenu.options.push("items." + item.id);
         }
       });
 
@@ -497,20 +526,14 @@
           menu.options.push("items." + insertSnippetItem.id);
           logInfo("Added Snippet '" + insertSnippetItem.displayText + "'");
 
-          if (
-            pluginData.favourites.find((element) => {
-              element === insertSnippetItem.id;
-            })
-          ) {
+          if (pluginData.favourites.indexOf(item.id) > -1) {
             if (
               insertSnippetFavouritesMenu.options.length == 1 &&
               insertSnippetFavouritesMenu.options[0] == "items.emptySnippetItem"
             ) {
               insertSnippetFavouritesMenu.options.pop();
             }
-            insertSnippetFavouritesMenu.options.push(
-              "items." + insertSnippetItem.id
-            );
+            insertSnippetFavouritesMenu.options.push("items." + item.id);
           }
         }
       });
@@ -632,26 +655,133 @@
           snippetName = prompt("Specifiy the name of the snippet:");
           if (snippetName === "") {
             alert("The name cannot be empty!");
+          } else if (
+            pluginData.privates.some(({ name }) => name === snippetName) ||
+            pluginData.predefined.some(({ name }) => name === snippetName)
+          ) {
+            snippetName = "";
+            alert("The name is already taken!");
           }
         }
         if (!snippetName) {
           return;
         }
 
-        let privateSnippetId = "privateSnippetItem" + crypto.randomUUID();
-        pluginData.privates.push({
-          id: privateSnippetId,
+        let privateSnippetItem = {
+          id: "privateSnippetItem" + crypto.randomUUID(),
           name: snippetName,
           xml: xmlText,
-        });
-        savePluginData();
-        buildInsertSnippetMenu();
+        };
+        if (validateNewPrivateSnippet(privateSnippetItem).length == 0) {
+          pluginData.privates.push(privateSnippetItem);
+          savePluginData();
+          buildInsertSnippetMenu();
+        } else {
+          alert(issues);
+        }
       } catch (e) {
         BF2042Portal.Shared.logError(errorMessage, e);
         alert(errorMessage);
       }
     },
   };
+
+  function validateEditPrivateSnippet(snippetItem) {
+    issues = [];
+    if (snippetItem) {
+      if (
+        snippetItem.hasOwnProperty("id") &&
+        snippetItem.hasOwnProperty("name") &&
+        snippetItem.hasOwnProperty("xml")
+      ) {
+        if (snippetItem.name != "") {
+          if (
+            pluginData.privates.find(({ id }) => id === snippetItem.id) !=
+            undefined
+          ) {
+            if (
+              !pluginData.predefined.some(
+                ({ name }) => name === snippetItem.name
+              )
+            ) {
+              if (snippetItem.xml != "") {
+                try {
+                  if (!snippetItem.xml.startsWith("<block")) {
+                    throw new Error("Snippet must start with a block element!");
+                  }
+                  const domText = `<xml xmlns="https://developers.google.com/blockly/xml">${snippetItem.xml.trim()}</xml>`;
+                  const xmlDom = _Blockly.Xml.textToDom(domText);
+                } catch (error) {
+                  issues.push(error);
+                }
+              } else {
+                issues.push("Snippet content doesn't appear to be proper XML");
+              }
+            } else {
+              issues.push("Snippet Name is already taken");
+            }
+          }
+        } else {
+          issues.push("Snippet Name must not be empty");
+        }
+      } else {
+        issues.push("A Snippet attribute is missing");
+      }
+    } else {
+      issues.push("Snippet is NULL");
+    }
+    return issues;
+  }
+
+  function validateNewPrivateSnippet(snippetItem) {
+    issues = [];
+    if (snippetItem) {
+      if (
+        snippetItem.hasOwnProperty("id") &&
+        snippetItem.hasOwnProperty("name") &&
+        snippetItem.hasOwnProperty("xml")
+      ) {
+        if (snippetItem.name != "") {
+          if (
+            !pluginData.privates.some(
+              ({ name }) => name === snippetItem.name
+            ) &&
+            !pluginData.predefined.some(({ name }) => name === snippetItem.name)
+          ) {
+            if (
+              !pluginData.privates.some(({ id }) => id === snippetItem.id) &&
+              !pluginData.predefined.some(({ id }) => id === snippetItem.id)
+            ) {
+              if (snippetItem.xml != "") {
+                try {
+                  if (!snippetItem.xml.startsWith("<block")) {
+                    throw new Error("Snippet must start with a block element!");
+                  }
+                  const domText = `<xml xmlns="https://developers.google.com/blockly/xml">${snippetItem.xml.trim()}</xml>`;
+                  const xmlDom = _Blockly.Xml.textToDom(domText);
+                } catch (error) {
+                  issues.push(error);
+                }
+              } else {
+                issues.push("Snippet content doesn't appear to be proper XML");
+              }
+            } else {
+              issues.push("Snippet ID seems to be already taken");
+            }
+          } else {
+            issues.push("Snippet Name is already taken");
+          }
+        } else {
+          issues.push("Snippet Name must not be empty");
+        }
+      } else {
+        issues.push("A Snippet attribute is missing");
+      }
+    } else {
+      issues.push("Snippet is NULL");
+    }
+    return issues;
+  }
 
   const insertSnippetFavouritesMenu = plugin.createMenu(
     "insertSnippetFavouritesMenu",
@@ -673,13 +803,6 @@
     workspaceScope
   );
 
-  const snippetsMenu = plugin.createMenu(
-    "snippetsMenu",
-    "Snippets",
-    workspaceScope
-  );
-  snippetsMenu.options = ["menus.insertSnippetMenu", "items.manageSnippets"];
-
   plugin.initializeWorkspace = function () {
     let loadedData = BF2042Portal.Shared.loadFromLocalStorage(pluginId);
     if (loadedData.favourites) {
@@ -693,7 +816,6 @@
           logInfo("added predefined snippets to plugin data.");
           buildInsertSnippetMenu();
 
-          plugin.registerMenu(snippetsMenu);
           plugin.registerMenu(insertSnippetMenu);
           plugin.registerMenu(insertSnippetFavouritesMenu);
           plugin.registerMenu(insertSnippetPrivateMenu);
@@ -702,7 +824,8 @@
           plugin.registerItem(addPrivateSnippetItem);
 
           try {
-            _Blockly.ContextMenuRegistry.registry.register(snippetsMenu);
+            _Blockly.ContextMenuRegistry.registry.register(insertSnippetMenu);
+            _Blockly.ContextMenuRegistry.registry.register(manageSnippetsItem);
             _Blockly.ContextMenuRegistry.registry.register(
               addPrivateSnippetItem
             );
