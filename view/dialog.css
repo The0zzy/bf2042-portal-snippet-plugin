@@ -1,0 +1,89 @@
+body {
+    background-color: #000;
+  }
+
+  .dialogBackdrop {
+    display: block;
+    position: fixed;
+    z-index: 1;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgb(0, 0, 0);
+    background-color: rgba(0, 0, 0, 0.4);
+  }
+
+  .dialogFrame {
+    margin: 7% 33% auto;
+    background-color: #333;
+    border: 1px solid;
+    border-color: #26ffdf;
+  }
+  .dialogHeader {
+    background-color: #26ffdf;
+    padding: 5px;
+    color: #000;
+    font-weight: bold;
+    font-size: 18px;
+    overflow: auto;
+  }
+  .dialogTitle {
+    text-transform: uppercase;
+    float: left;
+    padding: 5px;
+  }
+  .dialogClose {
+    cursor: pointer;
+    float: right;
+    padding: 5px;
+    border-radius: 15%;
+    background-color: #999;
+  }
+  .dialogClose:hover {
+    color: #fff;
+    background-color: #333;
+  }
+  .dialogBody {
+    color: #fff;
+    padding: 5px;
+    overflow: scroll;
+  }
+  .dialogFooter {
+    text-align: center;
+  }
+  .dialogButton {
+    cursor: pointer;
+    text-align: center;
+    vertical-align: baseline;
+    min-width: 164px;
+    line-height: 36px;
+    padding: 3px 10px;
+    text-transform: uppercase;
+    color: #fff;
+    background-color: #999;
+    border-radius: 0;
+    border: none;
+    box-sizing: border-box;
+    font-weight: bold;
+    font-size: 18px;
+    margin: 3px;
+  }
+  .dialogButton:hover {
+    color: #000;
+    background-color: #26ffdf;
+  }
+  a {
+    color: #999;
+    cursor: pointer;
+  }
+  a:hover {
+    color: #fff;
+  }
+  #snippetName{
+    width: 100%;
+  }
+  #snippetContent{
+    width: 100%;
+  }

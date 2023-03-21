@@ -1,9 +1,9 @@
 {
-    "id": "bf2042-portal-snippet-plugin",
-    "name": "Snippets",
-    "version": "0.0.2",
-    "homepage": "https://the0zzy.github.io/bf2042-portal-snippets-plugin/",
-    "description": "Insert snippets of blocks to your portal workspace",
-    "author": "TheOzzy",
-    "main": "index.js"
+  "id": "bf2042-portal-snippet-plugin",
+  "name": "Snippets",
+  "version": "1.0.0",
+  "homepage": "https://the0zzy.github.io/bf2042-portal-snippets-plugin/",
+  "description": "Insert snippets of blocks to your portal workspace",
+  "author": "TheOzzy",
+  "main": "index.js"
 }

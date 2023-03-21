@@ -1,0 +1,44 @@
+<html>
+  <head>
+    <title>Manage Snippets Dialog</title>
+    <link rel="stylesheet" href="/view/dialog.css" />
+  </head>
+  <body>
+    <div class="dialogBackdrop" id="dialogBackdrop">
+      <div class="dialogFrame" id="dialogFrame">
+        <div class="dialogHeader" id="dialogHeader">
+          <div class="dialogTitle" id="dialogTitle">Manage Snippets</div>
+          <div class="dialogClose" id="dialogClose">X</div>
+        </div>
+        <div class="dialogBody" id="dialogBody">
+          <ul>
+            <li style="list-style: none;">Favourites</li>
+            <ul id="favList"></ul>
+            <br />
+            <li style="list-style: none;">
+              Private&nbsp;&nbsp;&nbsp;<a id="addPrivateSnippet">[Add New]</a>
+            </li>
+            <ul id="privList"></ul>
+            <br />
+            <li style="list-style: none;"><b>Pre-Defined</b></li>
+          </ul>
+          <ul id="snippetList"></ul>
+        </div>
+        <div class="dialogFooter" id="dialogFooter">
+          <input
+            type="button"
+            class="dialogButton"
+            value="OK"
+            id="dialogButtonOk"
+          />
+          <input
+            type="button"
+            class="dialogButton"
+            value="CANCEL"
+            id="dialogButtonCancel"
+          />
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

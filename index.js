@@ -3,8 +3,296 @@
   const plugin = BF2042Portal.Plugins.getPlugin(pluginId);
   const workspaceScope = _Blockly.ContextMenuRegistry.ScopeType.WORKSPACE;
   const blockScope = _Blockly.ContextMenuRegistry.ScopeType.BLOCK;
+  let pluginData = {
+    favourites: [],
+    privates: [],
+    predefined: [],
+  };
 
-  plugin.initializeWorkspace = function () {};
+  function hideDialog() {
+    document.getElementById("dialogBackdrop").style.display = "none";
+  }
+
+  function showManageDialog() {
+    showDialog(plugin.getUrl("view/manage.html"), initManageDialog);
+  }
+
+  function showEditDialog(editId) {
+    showDialog(plugin.getUrl("view/edit.html"), () => {
+      initEditDialog(editId);
+    });
+  }
+
+  function initEditDialog(editId) {
+    document
+      .getElementById("dialogClose")
+      .addEventListener("click", showManageDialog);
+    document
+      .getElementById("dialogButtonCancel")
+      .addEventListener("click", showManageDialog);
+    document
+      .getElementById("dialogBackdrop")
+      .addEventListener("click", () => {});
+
+    let editItem = pluginData.privates.find(({ id }) => id === editId);
+
+    if (editItem) {
+      document.getElementById("snippetName").value = editItem.name;
+      document.getElementById("snippetContent").value = editItem.xml;
+      document
+        .getElementById("dialogButtonOk")
+        .addEventListener("click", () => {
+          let validationItem = {
+            id: editItem.id,
+            name: "",
+            xml: "",
+          };
+          validationItem.name = document.getElementById("snippetName").value;
+          validationItem.xml = document.getElementById("snippetContent").value;
+          if (validateEditPrivateSnippet(validationItem).length == 0) {
+            editItem.name = validationItem.name;
+            editItem.xml = validationItem.xml;
+            savePluginData();
+            buildInsertSnippetMenu();
+            showManageDialog();
+          } else {
+            alert(issues);
+          }
+        });
+    } else {
+      editItem = {
+        id: "privateSnippetItem" + crypto.randomUUID(),
+        name: "",
+        xml: "",
+      };
+      document
+        .getElementById("dialogButtonOk")
+        .addEventListener("click", () => {
+          editItem.name = document.getElementById("snippetName").value;
+          editItem.xml = document.getElementById("snippetContent").value;
+          if (validateNewPrivateSnippet(editItem).length == 0) {
+            pluginData.privates.push(editItem);
+            savePluginData();
+            buildInsertSnippetMenu();
+            showManageDialog();
+          } else {
+            alert(issues);
+          }
+        });
+    }
+  }
+
+  function addFavorite(id) {
+    let favIndex = pluginData.favourites.indexOf(id);
+    if (favIndex == -1) {
+      pluginData.favourites.push(id);
+    }
+    savePluginData();
+    buildInsertSnippetMenu();
+  }
+
+  function removeFavorite(id) {
+    let favIndex = pluginData.favourites.indexOf(id);
+    if (favIndex > -1) {
+      pluginData.favourites.splice(favIndex, 1);
+    }
+    savePluginData();
+    buildInsertSnippetMenu();
+  }
+
+  function removePrivate(itemId) {
+    let favIndex = pluginData.favourites.indexOf(itemId);
+    if (favIndex > -1) {
+      pluginData.favourites.splice(favIndex, 1);
+    }
+    let privItem = pluginData.privates.find(({ id }) => id === itemId);
+    let privIndex = pluginData.privates.indexOf(privItem);
+    if (privIndex > -1) {
+      pluginData.privates.splice(privIndex, 1);
+    }
+    savePluginData();
+    buildInsertSnippetMenu();
+  }
+
+  function initManageDialog() {
+    document
+      .getElementById("dialogClose")
+      .addEventListener("click", hideDialog);
+    document
+      .getElementById("dialogButtonOk")
+      .addEventListener("click", hideDialog);
+    document
+      .getElementById("dialogButtonCancel")
+      .addEventListener("click", hideDialog);
+    document.getElementById("dialogBackdrop").addEventListener("click", (e) => {
+      if (e.target === dialogBackdrop) {
+        hideDialog();
+      }
+    });
+
+    let favList = document.getElementById("favList");
+    favList.innerHTML = "";
+    pluginData.favourites.forEach((item) => {
+      let favData = pluginData.privates.find(({ id }) => id === item);
+      if (!favData) {
+        favData = pluginData.predefined.find(({ id }) => id === item);
+      }
+      if (favData) {
+        let favItem = document.createElement("li");
+        let itemText = document.createElement("span");
+        itemText.innerText = favData.name;
+        itemText.style.paddingRight = "5px";
+        favItem.appendChild(itemText);
+        let itemLink = document.createElement("a");
+        itemLink.innerText = "[remove]";
+        itemLink.addEventListener("click", () => {
+          removeFavorite(favData.id);
+          initManageDialog();
+        });
+        favItem.appendChild(itemLink);
+        favList.appendChild(favItem);
+      }
+    });
+
+    let privList = document.getElementById("privList");
+    privList.innerHTML = "";
+    pluginData.privates.forEach((item) => {
+      let privItem = document.createElement("li");
+      let itemText = document.createElement("span");
+      itemText.innerText = item.name;
+      itemText.style.paddingRight = "5px";
+      privItem.appendChild(itemText);
+
+      let itemLink = document.createElement("a");
+      itemLink.innerText = "[edit]";
+      itemLink.addEventListener("click", () => {
+        showEditDialog(item.id);
+      });
+      privItem.appendChild(itemLink);
+
+      itemLink = document.createElement("a");
+      itemLink.innerText = "[favor]";
+      itemLink.addEventListener("click", () => {
+        addFavorite(item.id);
+        initManageDialog();
+      });
+      privItem.appendChild(itemLink);
+
+      itemLink = document.createElement("a");
+      itemLink.innerText = "[delete]";
+      itemLink.addEventListener("click", () => {
+        if (
+          confirm(
+            "Do you really want to delete your private snippet '" +
+              item.name +
+              "'?"
+          )
+        ) {
+          removePrivate(item.id);
+          initManageDialog();
+        }
+      });
+      privItem.appendChild(itemLink);
+      privList.appendChild(privItem);
+    });
+
+    let snippetList = document.getElementById("snippetList");
+    snippetList.innerHTML = "";
+    pluginData.predefined.forEach((item) => {
+      let predCatList = document.getElementById(
+        "predefined-snippet-" + item.category + "-list"
+      );
+      if (!predCatList) {
+        predCatList = document.createElement("ul");
+        predCatList.id = "predefined-snippet-" + item.category + "-list";
+        let catItem = document.createElement("li");
+        catItem.style.listStyle = "none";
+        catItem.innerText = item.category;
+        catItem.appendChild(predCatList);
+        snippetList.appendChild(catItem);
+      }
+      let predItem = document.createElement("li");
+      let itemText = document.createElement("span");
+      itemText.innerText = item.name;
+      itemText.style.paddingRight = "5px";
+      predItem.appendChild(itemText);
+
+      let itemLink = document.createElement("a");
+      itemLink.innerText = "[favor]";
+      itemLink.addEventListener("click", () => {
+        addFavorite(item.id);
+        initManageDialog();
+      });
+      predItem.appendChild(itemLink);
+
+      itemLink = document.createElement("a");
+      itemLink.innerText = "[info]";
+      itemLink.addEventListener("click", () => {
+        alert(item.description);
+      });
+      predItem.appendChild(itemLink);
+
+      predCatList.appendChild(predItem);
+    });
+
+    document
+      .getElementById("addPrivateSnippet")
+      .addEventListener("click", showEditDialog);
+  }
+
+  function showDialog(dialogUrl, initFn) {
+    try {
+      fetch(dialogUrl)
+        .then((response) => {
+          if (!response.ok) {
+            logError(
+              "Did not receive proper response for manage dialog url '" +
+                url +
+                "'"
+            );
+          } else {
+            response
+              .text()
+              .then((data) => {
+                logInfo("Retrieved following dialog data:\n", data);
+                let dialogDoc = new DOMParser().parseFromString(
+                  data,
+                  "text/html"
+                );
+                let dialogBackdrop = dialogDoc.getElementById("dialogBackdrop");
+                let styleLink = dialogDoc.head.querySelector("link");
+                styleLink.setAttribute(
+                  "href",
+                  plugin.getUrl(styleLink.getAttribute("href"))
+                );
+                document.head.appendChild(styleLink);
+                let existingBackdrop = document.getElementById(
+                  "dialogBackdrop"
+                );
+                if (existingBackdrop) {
+                  document.body.removeChild(existingBackdrop);
+                }
+                document.body.appendChild(dialogBackdrop);
+                initFn();
+              })
+              .catch((reason) => {
+                logError(
+                  "Couldn't parse response data for dialog url '" +
+                    dialogUrl +
+                    "'\n" +
+                    reason
+                );
+              });
+          }
+        })
+        .catch((reason) => {
+          logError("Couldn't fetch dialog url '" + dialogUrl + "'\n" + reason);
+        });
+    } catch (e) {
+      logError("Failed to open dialog!", e);
+      alert("Failed to open dialog!\nCheck console for details.");
+    }
+  }
 
   function insertSnippetFromUrl(url) {
     try {
@@ -19,11 +307,7 @@
               .text()
               .then((data) => {
                 logInfo("Retrieved following snippet data:\n", data);
-                try {
-                  loadXml(data);
-                } catch (error) {
-                  logError("Failed to load snippet to workspace!", error);
-                }
+                insertSnippetFromText(data);
               })
               .catch((reason) => {
                 logError(
@@ -164,53 +448,96 @@
 
   function buildInsertSnippetMenu() {
     try {
+      let predefinedCategoryMenus = [];
+      insertSnippetMenu.options = [];
+      insertSnippetMenu.options = [
+        "menus.insertSnippetFavouritesMenu",
+        "menus.insertSnippetPrivateMenu",
+        "items.separatorWorkspace",
+      ];
       logInfo("Creating Snippets Menu...");
-      let categoryMenus = [];
-      fetch(plugin.getUrl("snippets/index.json"))
-        .then((response) => {
-          response.json().then((data) => {
-            logInfo("Retrieved snippets index:\n", data);
-            data.items.forEach((item) => {
-              let menuId = "insertMenu" + item.category;
-              let menuName = item.category;
-              let insertSnippetItem = {
-                id: "insertItem" + crypto.randomUUID(),
-                displayText: item.name,
-                scopeType: workspaceScope,
-                weight: 100,
-                preconditionFn: () => "enabled",
-                callback: () => {
-                  insertSnippetFromUrl(plugin.getUrl(item.url));
-                },
-              };
-              plugin.registerItem(insertSnippetItem);
-              if (!categoryMenus.some((element) => menuId === element.id)) {
-                let menu = plugin.createMenu(menuId, menuName, workspaceScope);
-                categoryMenus.push(menu);
-                plugin.registerMenu(menu);
-                insertSnippetMenu.options.push("menus." + menuId);
-                logInfo("Created Snippets Sub-Menu '" + menuName + "'");
-              }
-              let menu = categoryMenus.find(
-                (element) => element.id === "insertMenu" + item.category
-              );
-              if (menu) {
-                menu.options.push("items." + insertSnippetItem.id);
-                logInfo(
-                  "Added Snippet '" + insertSnippetItem.displayText + "'"
-                );
-              } else {
-                logError(
-                  "Couldn't find menu '" + "insertMenu" + item.category + "'"
-                );
-              }
-            });
-            logInfo("Created Snippets Menu!");
-          });
-        })
-        .catch((reason) => {
-          logError("Failed to retrieve snippets index:\n", reason);
-        });
+      insertSnippetPrivateMenu.options = ["items.emptySnippetItem"];
+      insertSnippetFavouritesMenu.options = ["items.emptySnippetItem"];
+      pluginData.privates.forEach((item) => {
+        const privateSnippetItem = {
+          id: item.id,
+          displayText: item.name,
+          scopeType: workspaceScope,
+          weight: 100,
+          preconditionFn: () => "enabled",
+          callback: () => {
+            insertSnippetFromText(item.xml);
+          },
+        };
+
+        plugin.registerItem(privateSnippetItem);
+
+        if (
+          insertSnippetPrivateMenu.options.length == 1 &&
+          insertSnippetPrivateMenu.options[0] == "items.emptySnippetItem"
+        ) {
+          insertSnippetPrivateMenu.options.pop();
+        }
+        insertSnippetPrivateMenu.options.push("items." + item.id);
+
+        if (pluginData.favourites.indexOf(item.id) > -1) {
+          if (
+            insertSnippetFavouritesMenu.options.length == 1 &&
+            insertSnippetFavouritesMenu.options[0] == "items.emptySnippetItem"
+          ) {
+            insertSnippetFavouritesMenu.options.pop();
+          }
+          insertSnippetFavouritesMenu.options.push("items." + item.id);
+        }
+      });
+
+      pluginData.predefined.forEach((item) => {
+        let menuId = "insertMenu" + item.category;
+        let menuName = item.category;
+        let menu = null;
+        if (
+          !insertSnippetMenu.options.some(
+            (element) => element === "menus." + menuId
+          )
+        ) {
+          menu = plugin.createMenu(menuId, menuName, workspaceScope);
+          plugin.registerMenu(menu);
+          insertSnippetMenu.options.push("menus." + menuId);
+          predefinedCategoryMenus.push(menu);
+          logInfo("Created Snippets Sub-Menu '" + menuName + "'");
+        }
+        menu = predefinedCategoryMenus.find((element) => element.id === menuId);
+        if (
+          !menu.options.some((element) => {
+            element === "items." + item.id;
+          })
+        ) {
+          let insertSnippetItem = {
+            id: item.id,
+            displayText: item.name,
+            scopeType: workspaceScope,
+            weight: 100,
+            preconditionFn: () => "enabled",
+            callback: () => {
+              insertSnippetFromUrl(plugin.getUrl(item.url));
+            },
+          };
+          plugin.registerItem(insertSnippetItem);
+          menu.options.push("items." + insertSnippetItem.id);
+          logInfo("Added Snippet '" + insertSnippetItem.displayText + "'");
+
+          if (pluginData.favourites.indexOf(item.id) > -1) {
+            if (
+              insertSnippetFavouritesMenu.options.length == 1 &&
+              insertSnippetFavouritesMenu.options[0] == "items.emptySnippetItem"
+            ) {
+              insertSnippetFavouritesMenu.options.pop();
+            }
+            insertSnippetFavouritesMenu.options.push("items." + item.id);
+          }
+        }
+      });
+      logInfo("Created Snippets Menu!");
     } catch (error) {
       logError("Failed to build snippets menu:\n", error);
     }
@@ -276,6 +603,15 @@
     return blocks;
   }
 
+  function savePluginData() {
+    let dataToSave = {
+      favourites: pluginData.favourites,
+      privates: pluginData.privates,
+      predefined: [],
+    };
+    BF2042Portal.Shared.saveToLocalStorage(pluginId, dataToSave);
+  }
+
   const manageSnippetsItem = {
     id: "manageSnippets",
     displayText: "Manage Snippets",
@@ -283,7 +619,8 @@
     weight: 100,
     preconditionFn: () => "enabled",
     callback: () => {
-      alert("Dialog to manage snippets coming soon!");
+      let dialogUrl = plugin.getUrl("view/manage.html");
+      showDialog(dialogUrl, initManageDialog);
     },
   };
 
@@ -318,38 +655,133 @@
           snippetName = prompt("Specifiy the name of the snippet:");
           if (snippetName === "") {
             alert("The name cannot be empty!");
+          } else if (
+            pluginData.privates.some(({ name }) => name === snippetName) ||
+            pluginData.predefined.some(({ name }) => name === snippetName)
+          ) {
+            snippetName = "";
+            alert("The name is already taken!");
           }
         }
         if (!snippetName) {
           return;
         }
 
-        const privateSnippetItem = {
+        let privateSnippetItem = {
           id: "privateSnippetItem" + crypto.randomUUID(),
-          displayText: snippetName,
-          scopeType: workspaceScope,
-          weight: 100,
-          preconditionFn: () => "enabled",
-          callback: () => {
-            insertSnippetFromText(xmlText);
-          },
+          name: snippetName,
+          xml: xmlText,
         };
-
-        plugin.registerItem(privateSnippetItem);
-
-        if (
-          insertSnippetPrivateMenu.options.length == 1 &&
-          insertSnippetPrivateMenu.options[0] == "items.emptySnippetItem"
-        ) {
-          insertSnippetPrivateMenu.options.pop();
+        if (validateNewPrivateSnippet(privateSnippetItem).length == 0) {
+          pluginData.privates.push(privateSnippetItem);
+          savePluginData();
+          buildInsertSnippetMenu();
+        } else {
+          alert(issues);
         }
-        insertSnippetPrivateMenu.options.push("items." + privateSnippetItem.id);
       } catch (e) {
         BF2042Portal.Shared.logError(errorMessage, e);
         alert(errorMessage);
       }
     },
   };
+
+  function validateEditPrivateSnippet(snippetItem) {
+    issues = [];
+    if (snippetItem) {
+      if (
+        snippetItem.hasOwnProperty("id") &&
+        snippetItem.hasOwnProperty("name") &&
+        snippetItem.hasOwnProperty("xml")
+      ) {
+        if (snippetItem.name != "") {
+          if (
+            pluginData.privates.find(({ id }) => id === snippetItem.id) !=
+            undefined
+          ) {
+            if (
+              !pluginData.predefined.some(
+                ({ name }) => name === snippetItem.name
+              )
+            ) {
+              if (snippetItem.xml != "") {
+                try {
+                  if (!snippetItem.xml.startsWith("<block")) {
+                    throw new Error("Snippet must start with a block element!");
+                  }
+                  const domText = `<xml xmlns="https://developers.google.com/blockly/xml">${snippetItem.xml.trim()}</xml>`;
+                  const xmlDom = _Blockly.Xml.textToDom(domText);
+                } catch (error) {
+                  issues.push(error);
+                }
+              } else {
+                issues.push("Snippet content doesn't appear to be proper XML");
+              }
+            } else {
+              issues.push("Snippet Name is already taken");
+            }
+          }
+        } else {
+          issues.push("Snippet Name must not be empty");
+        }
+      } else {
+        issues.push("A Snippet attribute is missing");
+      }
+    } else {
+      issues.push("Snippet is NULL");
+    }
+    return issues;
+  }
+
+  function validateNewPrivateSnippet(snippetItem) {
+    issues = [];
+    if (snippetItem) {
+      if (
+        snippetItem.hasOwnProperty("id") &&
+        snippetItem.hasOwnProperty("name") &&
+        snippetItem.hasOwnProperty("xml")
+      ) {
+        if (snippetItem.name != "") {
+          if (
+            !pluginData.privates.some(
+              ({ name }) => name === snippetItem.name
+            ) &&
+            !pluginData.predefined.some(({ name }) => name === snippetItem.name)
+          ) {
+            if (
+              !pluginData.privates.some(({ id }) => id === snippetItem.id) &&
+              !pluginData.predefined.some(({ id }) => id === snippetItem.id)
+            ) {
+              if (snippetItem.xml != "") {
+                try {
+                  if (!snippetItem.xml.startsWith("<block")) {
+                    throw new Error("Snippet must start with a block element!");
+                  }
+                  const domText = `<xml xmlns="https://developers.google.com/blockly/xml">${snippetItem.xml.trim()}</xml>`;
+                  const xmlDom = _Blockly.Xml.textToDom(domText);
+                } catch (error) {
+                  issues.push(error);
+                }
+              } else {
+                issues.push("Snippet content doesn't appear to be proper XML");
+              }
+            } else {
+              issues.push("Snippet ID seems to be already taken");
+            }
+          } else {
+            issues.push("Snippet Name is already taken");
+          }
+        } else {
+          issues.push("Snippet Name must not be empty");
+        }
+      } else {
+        issues.push("A Snippet attribute is missing");
+      }
+    } else {
+      issues.push("Snippet is NULL");
+    }
+    return issues;
+  }
 
   const insertSnippetFavouritesMenu = plugin.createMenu(
     "insertSnippetFavouritesMenu",
@@ -370,29 +802,40 @@
     "Insert Snippet",
     workspaceScope
   );
-  insertSnippetMenu.options = [
-    "menus.insertSnippetFavouritesMenu",
-    "menus.insertSnippetPrivateMenu",
-    "items.separatorWorkspace",
-  ];
 
-  const snippetsMenu = plugin.createMenu(
-    "snippetsMenu",
-    "Snippets",
-    workspaceScope
-  );
-  snippetsMenu.options = ["menus.insertSnippetMenu", "items.manageSnippets"];
+  plugin.initializeWorkspace = function () {
+    let loadedData = BF2042Portal.Shared.loadFromLocalStorage(pluginId);
+    if (loadedData.favourites) {
+      pluginData = loadedData;
+    }
+    fetch(plugin.getUrl("snippets/index.json"))
+      .then((response) => {
+        response.json().then((data) => {
+          logInfo("Retrieved snippets index:\n", data);
+          pluginData.predefined = data.items;
+          logInfo("added predefined snippets to plugin data.");
+          buildInsertSnippetMenu();
 
-  buildInsertSnippetMenu();
+          plugin.registerMenu(insertSnippetMenu);
+          plugin.registerMenu(insertSnippetFavouritesMenu);
+          plugin.registerMenu(insertSnippetPrivateMenu);
+          plugin.registerItem(emptySnippetItem);
+          plugin.registerItem(manageSnippetsItem);
+          plugin.registerItem(addPrivateSnippetItem);
 
-  plugin.registerMenu(snippetsMenu);
-  plugin.registerMenu(insertSnippetMenu);
-  plugin.registerMenu(insertSnippetFavouritesMenu);
-  plugin.registerMenu(insertSnippetPrivateMenu);
-  plugin.registerItem(emptySnippetItem);
-  plugin.registerItem(manageSnippetsItem);
-  plugin.registerItem(addPrivateSnippetItem);
-
-  _Blockly.ContextMenuRegistry.registry.register(snippetsMenu);
-  _Blockly.ContextMenuRegistry.registry.register(addPrivateSnippetItem);
+          try {
+            _Blockly.ContextMenuRegistry.registry.register(insertSnippetMenu);
+            _Blockly.ContextMenuRegistry.registry.register(manageSnippetsItem);
+            _Blockly.ContextMenuRegistry.registry.register(
+              addPrivateSnippetItem
+            );
+          } catch (error) {
+            logError("Couldn't register menu items.", error);
+          }
+        });
+      })
+      .catch((reason) => {
+        logError("Failed to retrieve snippets index:\n", reason);
+      });
+  };
 })();
