@@ -66,12 +66,13 @@
     buildInsertSnippetMenu();
   }
 
-  function removePrivate(id) {
-    let favIndex = pluginData.favourites.indexOf(id);
+  function removePrivate(itemId) {
+    let favIndex = pluginData.favourites.indexOf(itemId);
     if (favIndex > -1) {
       pluginData.favourites.splice(favIndex, 1);
     }
-    let privIndex = pluginData.privates.indexOf(id);
+    let privItem = pluginData.privates.find(({ id }) => id === itemId);
+    let privIndex = pluginData.privates.indexOf(privItem);
     if (privIndex > -1) {
       pluginData.privates.splice(privIndex, 1);
     }
@@ -154,6 +155,7 @@
     });
 
     let snippetList = document.getElementById("snippetList");
+    snippetList.innerHTML = "";
     pluginData.predefined.forEach((item) => {
       let predCatList = document.getElementById(
         "predefined-snippet-" + item.category + "-list"
