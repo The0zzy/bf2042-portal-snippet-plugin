@@ -67,9 +67,13 @@
   }
 
   function removePrivate(id) {
-    let favIndex = pluginData.privates.indexOf(id);
+    let favIndex = pluginData.favourites.indexOf(id);
     if (favIndex > -1) {
-      pluginData.privates.splice(favIndex, 1);
+      pluginData.favourites.splice(favIndex, 1);
+    }
+    let privIndex = pluginData.privates.indexOf(id);
+    if (privIndex > -1) {
+      pluginData.privates.splice(privIndex, 1);
     }
     savePluginData();
     buildInsertSnippetMenu();
@@ -94,18 +98,25 @@
     let favList = document.getElementById("favList");
     favList.innerHTML = "";
     pluginData.favourites.forEach((item) => {
-      let favItem = document.createElement("li");
-      let itemText = document.createElement("span");
-      itemText.innerText = item.name + "&nbsp&nbsp&nbsp";
-      favItem.appendChild(itemText);
-      let itemLink = document.createElement("a");
-      itemLink.innerText = "[remove]";
-      itemLink.addEventListener("click", () => {
-        removeFavorite(item.id);
-        initManageDialog();
-      });
-      favItem.appendChild(itemLink);
-      favList.appendChild(favItem);
+      let favData = pluginData.privates.find(({ id }) => id === item);
+      if (!favData) {
+        favData = pluginData.predefined.find(({ id }) => id === item);
+      }
+      if (favData) {
+        let favItem = document.createElement("li");
+        let itemText = document.createElement("span");
+        itemText.innerText = favData.name;
+        itemText.style.paddingRight = "5px";
+        favItem.appendChild(itemText);
+        let itemLink = document.createElement("a");
+        itemLink.innerText = "[remove]";
+        itemLink.addEventListener("click", () => {
+          removeFavorite(favData.id);
+          initManageDialog();
+        });
+        favItem.appendChild(itemLink);
+        favList.appendChild(favItem);
+      }
     });
 
     let privList = document.getElementById("privList");
@@ -113,7 +124,8 @@
     pluginData.privates.forEach((item) => {
       let privItem = document.createElement("li");
       let itemText = document.createElement("span");
-      itemText.innerText = item.name + "&nbsp&nbsp&nbsp";
+      itemText.innerText = item.name;
+      itemText.style.paddingRight = "5px";
       privItem.appendChild(itemText);
 
       let itemLink = document.createElement("a");
@@ -139,6 +151,37 @@
       });
       privItem.appendChild(itemLink);
       privList.appendChild(privItem);
+    });
+
+    let snippetList = document.getElementById("snippetList");
+    pluginData.predefined.forEach((item) => {
+      let predCatList = document.getElementById(
+        "predefined-snippet-" + item.category + "-list"
+      );
+      if (!predCatList) {
+        predCatList = document.createElement("ul");
+        predCatList.id = "predefined-snippet-" + item.category + "-list";
+        let catItem = document.createElement("li");
+        catItem.style.listStyle = "none";
+        catItem.innerText = item.category;
+        catItem.appendChild(predCatList);
+        snippetList.appendChild(catItem);
+      }
+      let predItem = document.createElement("li");
+      let itemText = document.createElement("span");
+      itemText.innerText = item.name;
+      itemText.style.paddingRight = "5px";
+      predItem.appendChild(itemText);
+
+      let itemLink = document.createElement("a");
+      itemLink.innerText = "[favor]";
+      itemLink.addEventListener("click", () => {
+        addFavorite(item.id);
+        initManageDialog();
+      });
+      predItem.appendChild(itemLink);
+      predItem.appendChild(itemLink);
+      predCatList.appendChild(predItem);
     });
 
     document
@@ -187,8 +230,9 @@
                   plugin.getUrl(styleLink.getAttribute("href"))
                 );
                 document.head.appendChild(styleLink);
-                let existingBackdrop =
-                  document.getElementById("dialogBackdrop");
+                let existingBackdrop = document.getElementById(
+                  "dialogBackdrop"
+                );
                 if (existingBackdrop) {
                   document.body.removeChild(existingBackdrop);
                 }
@@ -278,9 +322,8 @@
     const variables = [];
 
     variableBlocks.forEach((e) => {
-      const objectType = e.querySelector(
-        "field[name='OBJECTTYPE']"
-      ).textContent;
+      const objectType = e.querySelector("field[name='OBJECTTYPE']")
+        .textContent;
       const variableName = e.querySelector("field[name='VAR']").textContent;
 
       if (
