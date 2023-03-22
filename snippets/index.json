@@ -58,6 +58,34 @@
             "description": "Adds a while-loop with a wait block"
         },
         {
+            "id": "displayPositionCoordinates",
+            "category": "Player",
+            "url": "snippets/player/displayPositionCoordinates.xml",
+            "name": "Display Player Position (continuously)",
+            "description": "Adds a rule to continuously display the current players position in the header message"
+        },
+        {
+            "id": "getPlayerStateBool",
+            "category": "Player",
+            "url": "snippets/player/getPlayerStateBool.xml",
+            "name": "Get Player State (Bool)",
+            "description": "Adds a pre-filled GetPlayerState block with EventPlayer and PlayerState(Bool) selection value"
+        },
+        {
+            "id": "getPlayerStateNumber",
+            "category": "Player",
+            "url": "snippets/player/getPlayerStateNumber.xml",
+            "name": "Get Player State (Number)",
+            "description": "Adds a pre-filled GetPlayerState block with EventPlayer and PlayerState(Number) selection value"
+        },
+        {
+            "id": "getPlayerStateVector",
+            "category": "Player",
+            "url": "snippets/player/getPlayerStateVector.xml",
+            "name": "Get Player State (Vector)",
+            "description": "Adds a pre-filled GetPlayerState block with EventPlayer and PlayerState(Vector) selection value"
+        },
+        {
             "id": "executeEverySecondGlobal",
             "category": "Time",
             "url": "snippets/time/executeEverySecondGlobal.xml",
@@ -77,6 +105,13 @@
             "url": "snippets/time/executeEverySecondTeam.xml",
             "name": "Execute Every Second (Team)",
             "description": "Adds two rules and one subroutine that is executed every second for each team"
+        },
+        {
+            "id": "displayRemainingTimeMMss",
+            "category": "Time",
+            "url": "snippets/time/displayRemainingTimeMMss.xml",
+            "name": "Display Remaining Time (mm:ss)",
+            "description": "Adds a subroutine which will display the remaining game mode time in the format of mm:ss"
         },
         {
             "id": "teamSwitchUtility",
