@@ -132,10 +132,12 @@
 
     let favList = document.getElementById("favList");
     let favListLabel = document.getElementById("favouritesLabel");
-    favListLabel.addEventListener("click", () => {
-      favListLabel.classList.toggle("listLabelExpanded");
-      favListLabel.classList.toggle("listLabelCollapsed");
-      favList.classList.toggle("hiddenList");
+    favListLabel.addEventListener("click", (e) => {
+      if (e.target === favListLabel) {
+        favListLabel.classList.toggle("listLabelExpanded");
+        favListLabel.classList.toggle("listLabelCollapsed");
+        favList.classList.toggle("hiddenList");
+      }
     });
     favList.innerHTML = "";
     pluginData.favourites.forEach((item) => {
@@ -170,10 +172,12 @@
 
     let privList = document.getElementById("privList");
     let privListLabel = document.getElementById("privateLabel");
-    privListLabel.addEventListener("click", () => {
-      privListLabel.classList.toggle("listLabelExpanded");
-      privListLabel.classList.toggle("listLabelCollapsed");
-      privList.classList.toggle("hiddenList");
+    privListLabel.addEventListener("click", (e) => {
+      if (e.target === privListLabel) {
+        privListLabel.classList.toggle("listLabelExpanded");
+        privListLabel.classList.toggle("listLabelCollapsed");
+        privList.classList.toggle("hiddenList");
+      }
     });
     privList.innerHTML = "";
     let addPrivLink = document.createElement("a");
@@ -236,10 +240,12 @@
         catItem.classList.toggle("listLabel");
         catItem.classList.toggle("listLabelCollapsed");
         catItem.innerText = item.category;
-        catItem.addEventListener("click", () => {
-          catItem.classList.toggle("listLabelExpanded");
-          catItem.classList.toggle("listLabelCollapsed");
-          predCatList.classList.toggle("hiddenList");
+        catItem.addEventListener("click", (e) => {
+          if (e.target === catItem) {
+            catItem.classList.toggle("listLabelExpanded");
+            catItem.classList.toggle("listLabelCollapsed");
+            predCatList.classList.toggle("hiddenList");
+          }
         });
         catItem.appendChild(predCatList);
         snippetList.appendChild(catItem);
@@ -261,8 +267,10 @@
 
       itemLink = document.createElement("a");
       itemLink.innerHTML = "&#120154;";
-      itemLink.addEventListener("click", () => {
-        alert(item.description);
+      itemLink.addEventListener("click", (e) => {
+        if (e.target === itemLink) {
+          alert(item.description);
+        }
       });
       predItem.appendChild(itemLink);
       predCatList.appendChild(predItem);
