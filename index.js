@@ -131,6 +131,12 @@
     });
 
     let favList = document.getElementById("favList");
+    let favListLabel = document.getElementById("favouritesLabel");
+    favListLabel.addEventListener("click", () => {
+      favListLabel.classList.toggle("listLabelExpanded");
+      favListLabel.classList.toggle("listLabelCollapsed");
+      favList.classList.toggle("hiddenList");
+    });
     favList.innerHTML = "";
     pluginData.favourites.forEach((item) => {
       let favData = pluginData.privates.find(({ id }) => id === item);
@@ -144,7 +150,7 @@
         itemText.style.paddingRight = "5px";
         favItem.appendChild(itemText);
         let itemLink = document.createElement("a");
-        itemLink.innerText = "[remove]";
+        itemLink.innerHTML = "&#9734;";
         itemLink.addEventListener("click", () => {
           removeFavorite(favData.id);
           initManageDialog();
@@ -153,9 +159,29 @@
         favList.appendChild(favItem);
       }
     });
+    if (pluginData.favourites.length == 0) {
+      let favItem = document.createElement("li");
+      let itemText = document.createElement("span");
+      itemText.innerText = "empty";
+      itemText.style.paddingRight = "5px";
+      favItem.appendChild(itemText);
+      favList.appendChild(favItem);
+    }
 
     let privList = document.getElementById("privList");
+    let privListLabel = document.getElementById("privateLabel");
+    privListLabel.addEventListener("click", () => {
+      privListLabel.classList.toggle("listLabelExpanded");
+      privListLabel.classList.toggle("listLabelCollapsed");
+      privList.classList.toggle("hiddenList");
+    });
     privList.innerHTML = "";
+    let addPrivLink = document.createElement("a");
+    addPrivLink.innerText = "[Add New]";
+    addPrivLink.addEventListener("click", showEditDialog);
+    let addPrivItem = document.createElement("li");
+    addPrivItem.appendChild(addPrivLink);
+    privList.appendChild(addPrivItem);
     pluginData.privates.forEach((item) => {
       let privItem = document.createElement("li");
       let itemText = document.createElement("span");
@@ -164,14 +190,14 @@
       privItem.appendChild(itemText);
 
       let itemLink = document.createElement("a");
-      itemLink.innerText = "[edit]";
+      itemLink.innerHTML = "&#9874;";
       itemLink.addEventListener("click", () => {
         showEditDialog(item.id);
       });
       privItem.appendChild(itemLink);
 
       itemLink = document.createElement("a");
-      itemLink.innerText = "[favor]";
+      itemLink.innerHTML = "&#9733;";
       itemLink.addEventListener("click", () => {
         addFavorite(item.id);
         initManageDialog();
@@ -179,7 +205,7 @@
       privItem.appendChild(itemLink);
 
       itemLink = document.createElement("a");
-      itemLink.innerText = "[delete]";
+      itemLink.innerHTML = "&#10007;";
       itemLink.addEventListener("click", () => {
         if (
           confirm(
@@ -205,9 +231,16 @@
       if (!predCatList) {
         predCatList = document.createElement("ul");
         predCatList.id = "predefined-snippet-" + item.category + "-list";
+        predCatList.classList.toggle("hiddenList");
         let catItem = document.createElement("li");
-        catItem.style.listStyle = "none";
+        catItem.classList.toggle("listLabel");
+        catItem.classList.toggle("listLabelCollapsed");
         catItem.innerText = item.category;
+        catItem.addEventListener("click", () => {
+          catItem.classList.toggle("listLabelExpanded");
+          catItem.classList.toggle("listLabelCollapsed");
+          predCatList.classList.toggle("hiddenList");
+        });
         catItem.appendChild(predCatList);
         snippetList.appendChild(catItem);
       }
@@ -218,7 +251,8 @@
       predItem.appendChild(itemText);
 
       let itemLink = document.createElement("a");
-      itemLink.innerText = "[favor]";
+      itemLink.innerHTML = "&#9733;";
+
       itemLink.addEventListener("click", () => {
         addFavorite(item.id);
         initManageDialog();
@@ -226,18 +260,13 @@
       predItem.appendChild(itemLink);
 
       itemLink = document.createElement("a");
-      itemLink.innerText = "[info]";
+      itemLink.innerHTML = "&#120154;";
       itemLink.addEventListener("click", () => {
         alert(item.description);
       });
       predItem.appendChild(itemLink);
-
       predCatList.appendChild(predItem);
     });
-
-    document
-      .getElementById("addPrivateSnippet")
-      .addEventListener("click", showEditDialog);
   }
 
   function showDialog(dialogUrl, initFn) {
@@ -633,59 +662,6 @@
     callback: () => {},
   };
 
-  const addPrivateSnippetItem = {
-    id: "addPrivateSnippetItem",
-    displayText: "Add as Private Snippet",
-    scopeType: blockScope,
-    weight: 100,
-    preconditionFn: () => "enabled",
-    callback: (scope) => {
-      const errorMessage = "Couldn't get selection as snippet!";
-      try {
-        const blocks = getSelectedBlocks(scope);
-        const xmlText = saveXml(blocks);
-
-        if (!xmlText) {
-          alert(errorMessage);
-          return;
-        }
-
-        let snippetName = "";
-        while (snippetName === "") {
-          snippetName = prompt("Specifiy the name of the snippet:");
-          if (snippetName === "") {
-            alert("The name cannot be empty!");
-          } else if (
-            pluginData.privates.some(({ name }) => name === snippetName) ||
-            pluginData.predefined.some(({ name }) => name === snippetName)
-          ) {
-            snippetName = "";
-            alert("The name is already taken!");
-          }
-        }
-        if (!snippetName) {
-          return;
-        }
-
-        let privateSnippetItem = {
-          id: "privateSnippetItem" + crypto.randomUUID(),
-          name: snippetName,
-          xml: xmlText,
-        };
-        if (validateNewPrivateSnippet(privateSnippetItem).length == 0) {
-          pluginData.privates.push(privateSnippetItem);
-          savePluginData();
-          buildInsertSnippetMenu();
-        } else {
-          alert(issues);
-        }
-      } catch (e) {
-        BF2042Portal.Shared.logError(errorMessage, e);
-        alert(errorMessage);
-      }
-    },
-  };
-
   function validateEditPrivateSnippet(snippetItem) {
     issues = [];
     if (snippetItem) {
@@ -821,14 +797,10 @@
           plugin.registerMenu(insertSnippetPrivateMenu);
           plugin.registerItem(emptySnippetItem);
           plugin.registerItem(manageSnippetsItem);
-          plugin.registerItem(addPrivateSnippetItem);
 
           try {
             _Blockly.ContextMenuRegistry.registry.register(insertSnippetMenu);
             _Blockly.ContextMenuRegistry.registry.register(manageSnippetsItem);
-            _Blockly.ContextMenuRegistry.registry.register(
-              addPrivateSnippetItem
-            );
           } catch (error) {
             logError("Couldn't register menu items.", error);
           }

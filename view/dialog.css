@@ -16,7 +16,7 @@ body {
   }
 
   .dialogFrame {
-    margin: 7% 33% auto;
+    margin: 7% 33% 7% 33%;
     background-color: #333;
     border: 1px solid;
     border-color: #26ffdf;
@@ -38,12 +38,9 @@ body {
     cursor: pointer;
     float: right;
     padding: 5px;
-    border-radius: 15%;
-    background-color: #999;
   }
   .dialogClose:hover {
     color: #fff;
-    background-color: #333;
   }
   .dialogBody {
     color: #fff;
@@ -74,9 +71,26 @@ body {
     color: #000;
     background-color: #26ffdf;
   }
+  .listLabel{
+    list-style: none;
+    margin-right: 3px;
+    cursor: pointer;
+  }
+  .listLabelCollapsed::before{
+    content: '+ ';
+  }
+  .listLabelExpanded::before{
+    content: '- ';
+  }
+  .hiddenList{
+    display: none;
+  }
   a {
     color: #999;
     cursor: pointer;
+    margin: 0px 3px 0px 3px;
+    padding: 0px 3px 0px 3px;
+    font-size: 20px;
   }
   a:hover {
     color: #fff;
