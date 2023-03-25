@@ -101,3 +101,14 @@ body {
   #snippetContent{
     width: 100%;
   }
+  .snippetIcon {
+    width: 64px;
+    height: 64px;
+    fill: #999;
+    stroke: #999;
+    cursor: pointer;
+  }
+  .snippetIcon:hover {
+    fill: #fff;
+    stroke: #fff;
+  }

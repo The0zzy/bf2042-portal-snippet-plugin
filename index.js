@@ -130,6 +130,8 @@
       }
     });
 
+    let snippetEditIcon = document.getElementById("snippetEditIcon");
+
     let favList = document.getElementById("favList");
     let favListLabel = document.getElementById("favouritesLabel");
     favListLabel.addEventListener("click", (e) => {
@@ -194,7 +196,7 @@
       privItem.appendChild(itemText);
 
       let itemLink = document.createElement("a");
-      itemLink.innerHTML = "&#9874;";
+      itemLink.appendChild(snippetEditIcon);
       itemLink.addEventListener("click", () => {
         showEditDialog(item.id);
       });

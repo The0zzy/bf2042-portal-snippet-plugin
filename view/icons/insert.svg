@@ -1,15 +1,44 @@
-<?xml version="1.0" encoding="iso-8859-1"?>
-<!-- Uploaded to: SVG Repo, www.svgrepo.com, Generator: SVG Repo Mixer Tools -->
-<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
-<svg fill="#000000" version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" 
-	 width="800px" height="800px" viewBox="0 0 422.649 422.649"
-	 xml:space="preserve">
-<g>
-	<path d="M409.641,1.352H231.924c-7.184,0-13.01,5.824-13.01,13.009V86.01H17.586C7.873,86.01,0,93.883,0,103.595v300.116
-		c0,9.713,7.873,17.586,17.586,17.586h300.117c9.711,0,17.584-7.873,17.584-17.586V205.088h74.354
-		c7.184,0,13.008-5.823,13.008-13.009V14.361C422.648,7.177,416.824,1.352,409.641,1.352z M300.117,386.127H35.17V121.18h183.744
-		v50.841l-75.533,75.534l-18.91-18.91c-1.9-1.9-4.668-2.641-7.262-1.945c-2.594,0.695-4.621,2.721-5.314,5.316l-25.512,95.227
-		c-0.693,2.594,0.047,5.362,1.945,7.262c1.43,1.429,3.35,2.201,5.316,2.201c0.648,0,1.303-0.084,1.945-0.256l95.227-25.51
-		c2.596-0.695,4.621-2.722,5.316-5.314c0.695-2.596-0.047-5.362-1.945-7.264l-18.912-18.91l74.365-74.364h50.477V386.127z"/>
-</g>
-</svg>
+<svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="100%"
+      height="100%"
+      viewBox="0 0 32 32"
+      class="snippetIcon"
+      id="snippetInsertIcon"
+    >
+      <rect
+        x="2"
+        y="6"
+        width="24"
+        height="24"
+        stroke-width="2"
+        stroke-opacity="1"
+        stroke-linecap="butt"
+        fill="none"
+      />
+      <rect x="22" y="0" width="10" height="10" />
+      <line
+        x1="22"
+        y1="10"
+        x2="12"
+        y2="20"
+        stroke-width="2"
+        stroke-linecap="round"
+      />
+      <line
+        x1="12"
+        y1="12"
+        x2="12"
+        y2="20"
+        stroke-width="2"
+        stroke-linecap="round"
+      />
+      <line
+        x1="12"
+        y1="20"
+        x2="20"
+        y2="20"
+        stroke-width="2"
+        stroke-linecap="round"
+      />
+    </svg>
