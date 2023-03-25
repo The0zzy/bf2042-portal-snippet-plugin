@@ -130,7 +130,12 @@
       }
     });
 
-    let snippetEditIcon = document.getElementById("snippetEditIcon");
+    let editIcon = document.getElementById("snippetEditIcon");
+    let infoIcon = document.getElementById("snippetInfoIcon");
+    let addIcon = document.getElementById("snippetAddIcon");
+    let insertIcon = document.getElementById("snippetInsertIcon");
+    let favouriteIcon = document.getElementById("snippetFavouriteIcon");
+    let removeIcon = document.getElementById("snippetRemoveIcon");
 
     let favList = document.getElementById("favList");
     let favListLabel = document.getElementById("favouritesLabel");
@@ -154,12 +159,26 @@
         itemText.style.paddingRight = "5px";
         favItem.appendChild(itemText);
         let itemLink = document.createElement("a");
-        itemLink.innerHTML = "&#9734;";
+        itemLink.appendChild(removeIcon.cloneNode(true));
         itemLink.addEventListener("click", () => {
           removeFavorite(favData.id);
           initManageDialog();
         });
         favItem.appendChild(itemLink);
+
+        itemLink = document.createElement("a");
+        itemLink.appendChild(insertIcon.cloneNode(true));
+        itemLink.addEventListener("click", () => {
+          if(favData.hasOwnProperty("url")){
+            insertSnippetFromUrl(plugin.getUrl(favData.url));
+          }else if(favData.hasOwnProperty("xml")){
+            insertSnippetFromText(favData.xml)
+          }else{
+            alert("Cannot insert data from unknown item type.");
+          }
+        });
+        favItem.appendChild(itemLink);
+
         favList.appendChild(favItem);
       }
     });
@@ -196,14 +215,14 @@
       privItem.appendChild(itemText);
 
       let itemLink = document.createElement("a");
-      itemLink.appendChild(snippetEditIcon);
+      itemLink.appendChild(editIcon.cloneNode(true));
       itemLink.addEventListener("click", () => {
         showEditDialog(item.id);
       });
       privItem.appendChild(itemLink);
 
       itemLink = document.createElement("a");
-      itemLink.innerHTML = "&#9733;";
+      itemLink.appendChild(favouriteIcon.cloneNode(true));
       itemLink.addEventListener("click", () => {
         addFavorite(item.id);
         initManageDialog();
@@ -211,7 +230,7 @@
       privItem.appendChild(itemLink);
 
       itemLink = document.createElement("a");
-      itemLink.innerHTML = "&#10007;";
+      itemLink.appendChild(removeIcon.cloneNode(true));
       itemLink.addEventListener("click", () => {
         if (
           confirm(
@@ -225,6 +244,14 @@
         }
       });
       privItem.appendChild(itemLink);
+
+      itemLink = document.createElement("a");
+      itemLink.appendChild(insertIcon.cloneNode(true));
+      itemLink.addEventListener("click", () => {
+        insertSnippetFromText(item.xml);
+      });
+      privItem.appendChild(itemLink);
+
       privList.appendChild(privItem);
     });
 
@@ -259,8 +286,7 @@
       predItem.appendChild(itemText);
 
       let itemLink = document.createElement("a");
-      itemLink.innerHTML = "&#9733;";
-
+      itemLink.appendChild(favouriteIcon.cloneNode(true));
       itemLink.addEventListener("click", () => {
         addFavorite(item.id);
         initManageDialog();
@@ -268,13 +294,19 @@
       predItem.appendChild(itemLink);
 
       itemLink = document.createElement("a");
-      itemLink.innerHTML = "&#120154;";
+      itemLink.appendChild(infoIcon.cloneNode(true));
       itemLink.addEventListener("click", (e) => {
-        if (e.target === itemLink) {
-          alert(item.description);
-        }
+        alert(item.description);
       });
       predItem.appendChild(itemLink);
+
+      itemLink = document.createElement("a");
+      itemLink.appendChild(insertIcon.cloneNode(true));
+      itemLink.addEventListener("click", (e) => {
+        insertSnippetFromUrl(plugin.getUrl(item.url));
+      });
+      predItem.appendChild(itemLink);
+
       predCatList.appendChild(predItem);
     });
   }

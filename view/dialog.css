@@ -102,8 +102,8 @@ body {
     width: 100%;
   }
   .snippetIcon {
-    width: 64px;
-    height: 64px;
+    width: 15px;
+    height: 15px;
     fill: #999;
     stroke: #999;
     cursor: pointer;
