@@ -85,14 +85,13 @@ body {
   .hiddenList{
     display: none;
   }
-  a {
+  .snippetLink {
     color: #999;
     cursor: pointer;
-    margin: 0px 3px 0px 3px;
-    padding: 0px 3px 0px 3px;
     font-size: 20px;
+    margin-right: 5px;
   }
-  a:hover {
+  .snippetLink:hover {
     color: #fff;
   }
   #snippetName{
@@ -100,4 +99,15 @@ body {
   }
   #snippetContent{
     width: 100%;
+  }
+  .snippetIcon {
+    width: 18px;
+    height: 18px;
+    fill: #999;
+    stroke: #999;
+    cursor: pointer;
+  }
+  .snippetIcon:hover {
+    fill: #fff;
+    stroke: #fff;
   }

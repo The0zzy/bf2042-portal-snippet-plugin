@@ -1,0 +1,12 @@
+<svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="100%"
+      height="100%"
+      viewBox="0 0 32 32"
+      class="snippetIcon"
+      id="snippetFavouriteIcon"
+    >
+      <polygon
+        points="16 0 10 12 0 12 8 20 2 32 16 24 30 32 24 20 32 12 22 12"
+      />
+    </svg>
