@@ -1,5 +1,7 @@
 # BF2042 Portal - Code Snippet Plugin
 
+![manageDialog](docs/images/manageDialog.png "manageDialog")
+
 ## About
 
 This is a plugin for the [Battlefield Portal Browser Extension](https://github.com/LennardF1989/BF2042-Portal-Extensions) to provide code snippets to insert into the workspace of the Battlefield 2042 Portal Rules Editor.
@@ -35,11 +37,11 @@ https://the0zzy.github.io/bf2042-portal-snippet-plugin/manifest.json
    - Other Categories: Predefined categories and snippets
 4. Click on the snippet name you want to insert
 
-![insertSnippet01](/docs/images/insertSnippet01.png "insertSnippet01")
-![insertSnippet02](/docs/images/insertSnippet02.png "insertSnippet02")
-![insertSnippet03](/docs/images/insertSnippet03.png "insertSnippet03")
+![insertSnippet01](docs/images/insertSnippet01.png "insertSnippet01")
+![insertSnippet02](docs/images/insertSnippet02.png "insertSnippet02")
+![insertSnippet03](docs/images/insertSnippet03.png "insertSnippet03")
 
-![insertSnippet04](/docs/images/insertSnippet04.png "insertSnippet04")
+![insertSnippet04](docs/images/insertSnippet04.png "insertSnippet04")
 
 ### Manage Code Snippets
 
@@ -52,7 +54,7 @@ With the "Manage Dialog" you can
 
 To open the manage dialog, right-click on the workspace (not on a block) and select `Manage Snippets` from the context menu.
 
-![manageDialog](/docs/images/manageDialog.png "manageDialog")
+![manageDialog](docs/images/manageDialog.png "manageDialog")
 
 ### Create your own private Code Snippet
 
@@ -63,7 +65,7 @@ To open the manage dialog, right-click on the workspace (not on a block) and sel
 The content of a snippet is the underlying Blockly XML Code.  
 Such code can be obtained by using the `Copy to Clipboard` function of the [Battlefield Portal Browser Extension](https://github.com/LennardF1989/BF2042-Portal-Extensions).
 
-![editDialog](/docs/images/editDialog.png "editDialog")
+![editDialog](docs/images/editDialog.png "editDialog")
 
 ## Contribute Predefined Snippets
 
