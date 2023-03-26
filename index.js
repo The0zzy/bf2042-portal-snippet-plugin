@@ -160,6 +160,7 @@
         favItem.appendChild(itemText);
         let itemLink = document.createElement("a");
         itemLink.appendChild(removeIcon.cloneNode(true));
+        itemLink.classList.toggle("snippetLink");
         itemLink.addEventListener("click", () => {
           removeFavorite(favData.id);
           initManageDialog();
@@ -168,6 +169,7 @@
 
         itemLink = document.createElement("a");
         itemLink.appendChild(insertIcon.cloneNode(true));
+        itemLink.classList.toggle("snippetLink");
         itemLink.addEventListener("click", () => {
           if(favData.hasOwnProperty("url")){
             insertSnippetFromUrl(plugin.getUrl(favData.url));
@@ -203,6 +205,7 @@
     privList.innerHTML = "";
     let addPrivLink = document.createElement("a");
     addPrivLink.innerText = "[Add New]";
+    addPrivLink.classList.toggle("snippetLink");
     addPrivLink.addEventListener("click", showEditDialog);
     let addPrivItem = document.createElement("li");
     addPrivItem.appendChild(addPrivLink);
@@ -216,6 +219,7 @@
 
       let itemLink = document.createElement("a");
       itemLink.appendChild(editIcon.cloneNode(true));
+      itemLink.classList.toggle("snippetLink");
       itemLink.addEventListener("click", () => {
         showEditDialog(item.id);
       });
@@ -223,6 +227,7 @@
 
       itemLink = document.createElement("a");
       itemLink.appendChild(favouriteIcon.cloneNode(true));
+      itemLink.classList.toggle("snippetLink");
       itemLink.addEventListener("click", () => {
         addFavorite(item.id);
         initManageDialog();
@@ -231,6 +236,7 @@
 
       itemLink = document.createElement("a");
       itemLink.appendChild(removeIcon.cloneNode(true));
+      itemLink.classList.toggle("snippetLink");
       itemLink.addEventListener("click", () => {
         if (
           confirm(
@@ -247,6 +253,7 @@
 
       itemLink = document.createElement("a");
       itemLink.appendChild(insertIcon.cloneNode(true));
+      itemLink.classList.toggle("snippetLink");
       itemLink.addEventListener("click", () => {
         insertSnippetFromText(item.xml);
       });
@@ -287,6 +294,7 @@
 
       let itemLink = document.createElement("a");
       itemLink.appendChild(favouriteIcon.cloneNode(true));
+      itemLink.classList.toggle("snippetLink");
       itemLink.addEventListener("click", () => {
         addFavorite(item.id);
         initManageDialog();
@@ -295,6 +303,7 @@
 
       itemLink = document.createElement("a");
       itemLink.appendChild(infoIcon.cloneNode(true));
+      itemLink.classList.toggle("snippetLink");
       itemLink.addEventListener("click", (e) => {
         alert(item.description);
       });
@@ -302,6 +311,7 @@
 
       itemLink = document.createElement("a");
       itemLink.appendChild(insertIcon.cloneNode(true));
+      itemLink.classList.toggle("snippetLink");
       itemLink.addEventListener("click", (e) => {
         insertSnippetFromUrl(plugin.getUrl(item.url));
       });
