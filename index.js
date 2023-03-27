@@ -114,6 +114,78 @@
     buildInsertSnippetMenu();
   }
 
+  function importSettings() {
+    if (
+      !confirm(
+        "This will override your current favourites and private snippets with the ones loaded from file.\n\nDo you want to continue?"
+      )
+    ) {
+      return;
+    }
+    const inputElement = document.createElement("input");
+    inputElement.setAttribute("type", "file");
+    inputElement.setAttribute("accept", ".json");
+    inputElement.style.display = "none";
+
+    inputElement.addEventListener("change", function () {
+      if (!inputElement.files || inputElement.files.length === 0) {
+        return;
+      }
+
+      const fileReader = new FileReader();
+      fileReader.onload = function (e) {
+        try {
+          const loadData = e.target.result;
+          let data = JSON.parse(loadData);
+          if (
+            !data ||
+            !data.hasOwnProperty("favourites") ||
+            !data.hasOwnProperty("privates")
+          ) {
+            alert("Failed to parse plugin settings!");
+          } else {
+            pluginData.favourites = data.favourites;
+            pluginData.privates = data.privates;
+            savePluginData();
+            initManageDialog();
+          }
+        } catch (e) {
+          alert("Failed to import plugin settings!");
+        }
+      };
+
+      fileReader.readAsText(inputElement.files[0]);
+    });
+
+    document.body.appendChild(inputElement);
+    inputElement.click();
+    document.body.removeChild(inputElement);
+  }
+
+  function exportSettings() {
+    const dataToStore = {
+      favourites: [],
+      privates: [],
+    };
+    dataToStore.favourites = pluginData.favourites;
+    dataToStore.privates = pluginData.privates;
+    const dataUri = `data:application/json;charset=utf-8,${encodeURIComponent(
+      JSON.stringify(dataToStore)
+    )}`;
+    downloadFile(dataUri, "snippet-plugin-settings.json");
+  }
+
+  function downloadFile(fileData, fileName) {
+    const linkElement = document.createElement("a");
+    linkElement.setAttribute("href", fileData);
+    linkElement.setAttribute("download", fileName);
+    linkElement.style.display = "none";
+
+    document.body.appendChild(linkElement);
+    linkElement.click();
+    document.body.removeChild(linkElement);
+  }
+
   function initManageDialog() {
     document
       .getElementById("dialogClose")
@@ -136,6 +208,23 @@
     let insertIcon = document.getElementById("snippetInsertIcon");
     let favouriteIcon = document.getElementById("snippetFavouriteIcon");
     let removeIcon = document.getElementById("snippetRemoveIcon");
+    let importIcon = document.getElementById("snippetImportIcon");
+    let exportIcon = document.getElementById("snippetExportIcon");
+
+    let settingsContainer = document.getElementById("snippetSettingsContainer");
+    settingsContainer.innerHTML = "<span>Settings: </span>";
+
+    let exportItem = document.createElement("a");
+    exportItem.classList.toggle("snippetLink");
+    exportItem.appendChild(exportIcon.cloneNode(true));
+    exportItem.addEventListener("click", exportSettings);
+    settingsContainer.appendChild(exportItem);
+
+    let importItem = document.createElement("a");
+    importItem.classList.toggle("snippetLink");
+    importItem.appendChild(importIcon.cloneNode(true));
+    importItem.addEventListener("click", importSettings);
+    settingsContainer.appendChild(importItem);
 
     let favList = document.getElementById("favList");
     let favListLabel = document.getElementById("favouritesLabel");
@@ -171,11 +260,11 @@
         itemLink.appendChild(insertIcon.cloneNode(true));
         itemLink.classList.toggle("snippetLink");
         itemLink.addEventListener("click", () => {
-          if(favData.hasOwnProperty("url")){
+          if (favData.hasOwnProperty("url")) {
             insertSnippetFromUrl(plugin.getUrl(favData.url));
-          }else if(favData.hasOwnProperty("xml")){
-            insertSnippetFromText(favData.xml)
-          }else{
+          } else if (favData.hasOwnProperty("xml")) {
+            insertSnippetFromText(favData.xml);
+          } else {
             alert("Cannot insert data from unknown item type.");
           }
         });

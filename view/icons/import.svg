@@ -1,0 +1,10 @@
+<svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="100%"
+      height="100%"
+      viewBox="0 0 32 32"
+      class="snippetIcon"
+      id="snippetImportIcon"
+    >
+    <path d="M 0 26 V 0 H 32 V 26 M 16 32 V 12 M 8 20 L 16 12 L 24 20" fill="transparent" stroke-width="4" stroke-linecap="round">
+    </svg>
