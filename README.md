@@ -51,6 +51,7 @@ With the "Manage Dialog" you can
 - create and delete your own private snippets
 - browse predefined snippets
 - insert snippets to the workspace
+- export and import settings (favourites and private snippets)
 
 To open the manage dialog, right-click on the workspace (not on a block) and select `Manage Snippets` from the context menu.
 
@@ -66,6 +67,13 @@ The content of a snippet is the underlying Blockly XML Code.
 Such code can be obtained by using the `Copy to Clipboard` function of the [Battlefield Portal Browser Extension](https://github.com/LennardF1989/BF2042-Portal-Extensions).
 
 ![editDialog](docs/images/editDialog.png "editDialog")
+
+### Export and Import Plugin Data
+
+You can export and import the configured favourites and your private snippets.
+This can be done by clicking the according icon in the top-right of the manage dialog.
+The export will create a JSON file with the according data.
+When you import this file, it will remove your current favourites and private snippets before loading the ones from the file.
 
 ## Contribute Predefined Snippets
 
