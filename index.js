@@ -14,6 +14,7 @@
   }
 
   function showManageDialog() {
+    loadPluginData();
     showDialog(plugin.getUrl("view/manage.html"), initManageDialog);
   }
 
@@ -773,6 +774,13 @@
     return blocks;
   }
 
+  function loadPluginData() {
+    let loadedData = BF2042Portal.Shared.loadFromLocalStorage(pluginId);
+    if (loadedData.favourites) {
+      pluginData = loadedData;
+    }
+  }
+
   function savePluginData() {
     let dataToSave = {
       favourites: pluginData.favourites,
@@ -921,10 +929,7 @@
   );
 
   plugin.initializeWorkspace = function () {
-    let loadedData = BF2042Portal.Shared.loadFromLocalStorage(pluginId);
-    if (loadedData.favourites) {
-      pluginData = loadedData;
-    }
+    loadPluginData();
     fetch(plugin.getUrl("snippets/index.json"))
       .then((response) => {
         response.json().then((data) => {
