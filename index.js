@@ -794,7 +794,7 @@
     id: "manageSnippets",
     displayText: "Manage Snippets",
     scopeType: workspaceScope,
-    weight: 100,
+    weight: 99,
     preconditionFn: () => "enabled",
     callback: () => {
       let dialogUrl = plugin.getUrl("view/manage.html");
@@ -927,6 +927,7 @@
     "Insert Snippet",
     workspaceScope
   );
+  insertSnippetMenu.weight = 99;
 
   plugin.initializeWorkspace = function () {
     loadPluginData();
@@ -944,12 +945,23 @@
           plugin.registerItem(emptySnippetItem);
           plugin.registerItem(manageSnippetsItem);
 
-          try {
-            _Blockly.ContextMenuRegistry.registry.register(insertSnippetMenu);
-            _Blockly.ContextMenuRegistry.registry.register(manageSnippetsItem);
-          } catch (error) {
-            logError("Couldn't register menu items.", error);
+          if (
+            _Blockly.ContextMenuRegistry.registry.getItem(insertSnippetMenu.id)
+          ) {
+            _Blockly.ContextMenuRegistry.registry.unregister(
+              insertSnippetMenu.id
+            );
           }
+          _Blockly.ContextMenuRegistry.registry.register(insertSnippetMenu);
+
+          if (
+            _Blockly.ContextMenuRegistry.registry.getItem(manageSnippetsItem.id)
+          ) {
+            _Blockly.ContextMenuRegistry.registry.unregister(
+              manageSnippetsItem.id
+            );
+          }
+          _Blockly.ContextMenuRegistry.registry.register(manageSnippetsItem);
         });
       })
       .catch((reason) => {
