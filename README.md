@@ -12,9 +12,17 @@ This is a plugin for the [Battlefield Portal Browser Extension](https://github.c
    - Chrome: https://chrome.google.com/webstore/detail/bf2042-portal-extensions/ojegdnmadhmgfijhiibianlhbkepdhlj
    - Firefox: https://addons.mozilla.org/en-US/firefox/addon/bf2042-portal-extensions/
 2. Pin the extension to be able to click on it
-3. Click on the extension icon > `Options`
-4. Click on `Add plugin` and enter the following url
+3. Click on the extension icon and a popup should appear
+4. Click on `official extension manifest` in the text to automatically fill the "Manifest URL" and "Version" input.
+5. Click confirm
+6. Reload any Rules Editor Page and right-click in the Workspace
+7. A context menu should appear which shows an `Options >` item (if not, reload the page again and check that the Portal browser extension is active)
+8. Click on `Options >` and then `Plugin Manager`
+9. In the Plugin Manager click on `Add Plugin` on the top-right corner
+10. Enter the **Plugin Manifest URL** below and click `Review`, then click `Confirm` after seeing the sourcecode of the plugin.
+11. After the plugin was added to the list of plugins, you need to reload the rules editor page in order to activate it
 
+**Plugin manifest.json URL**
 ```txt
 https://the0zzy.github.io/bf2042-portal-snippet-plugin/manifest.json
 ```
